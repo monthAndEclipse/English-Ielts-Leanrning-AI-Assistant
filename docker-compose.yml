@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  llm-service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lg154286411/llm-service-api:latest
+    container_name: llm-service-api
+    #in production mode,it should be commented
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WORKSPACE_MOUNT_PATH=${WORKSPACE_BASE:-$PWD/workspace}
+      - CONSUL_CONFIG_PREFIX=${CONSUL_CONFIG_PREFIX}
+      - CONSUL_HOST=${CONSUL_HOST}
+      - CONSUL_PORT=${CONSUL_PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - HOSTNAME=${HOSTNAME}
+      - SERVICE_ID=${SERVICE_ID}
+      - SERVICE_NAME=${SERVICE_NAME}
+      - SERVICE_PORT=${SERVICE_PORT}
+    volumes:
+      - ${WORKSPACE_BASE:-$PWD/workspace}:/opt/workspace_base
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - shared
+    stdin_open: true
+    tty: true
+
+networks:
+  shared:
+    external: true
