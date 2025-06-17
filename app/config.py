@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # 云存储服务配置
-    storage_service_container: str = Field(default="cloud-storage-service-api")
+    storage_service_container: str = Field(default="localhost:8002")
 
     """RabbitMQ配置"""
     host: str = Field(default="localhost")
@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     llm_default_model:str = Field(default="deepseek-chat")
     llm_agent_role:str = Field(default="you are a translation engine")
     llm_prompt_max_chars:int = Field(default=3000)
+    llm_max_concurrent_task:int = Field(default=10)
+    llm_max_retries:int = Field(default=1)
+    llm_retry_delay:int = Field(default=5)#second
 
     def load_lazy(self):
         self.max_concurrent_messages = int(get_config("/max_concurrent_messages", self.max_concurrent_messages))
@@ -57,8 +60,11 @@ class Settings(BaseSettings):
         self.llm_default_model: str = get_config("/llm_default_model", self.llm_default_model)
         self.llm_agent_role: str = get_config("/llm_agent_role", self.llm_agent_role)
         self.llm_prompt_max_chars: int = int(get_config("/llm_prompt_max_chars", self.llm_prompt_max_chars))
+        self.llm_max_concurrent_task: int = int(get_config("/llm_max_concurrent_task", self.llm_max_concurrent_task))
+        self.llm_max_retries: int = int(get_config("/llm_max_retries", self.llm_max_retries))
+        self.llm_retry_delay: int = int(get_config("/llm_retry_delay", self.llm_retry_delay))
         """云存储服务容器名称"""
-        self.storage_service_container: str = get_config("/storage_service_container", self.storage_service_container)
+        self.storage_service_container: str = os.getenv("STORAGE_SERVICE_CONTAINER")
 
     class Config:
         env_file = ".env"

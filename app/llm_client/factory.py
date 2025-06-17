@@ -1,5 +1,5 @@
-from openai_client import OpenAIClient
-from deepseek_client import DeepSeekClient
+from app.llm_client.openai_client import OpenAIClient
+from app.llm_client.deepseek_client import DeepSeekClient
 import logging
 # 未来可以引入 ClaudeClient, DeepseekClient 等
 

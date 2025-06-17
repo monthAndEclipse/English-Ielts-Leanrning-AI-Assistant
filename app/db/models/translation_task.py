@@ -4,11 +4,9 @@ from datetime import datetime, timezone
 from typing import Optional
 
 class TranslationTask(SQLModel, table=True):
+    __tablename__ = "translation_task"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field(default_factory=lambda:  datetime.now(timezone.utc), nullable=False)
-    updated_at: datetime = Field(default_factory=lambda:  datetime.now(timezone.utc), nullable=False)
-    id: int
-    task_id: UUID
+    task_id: str = Field(index=True, unique=True)
     event_type: str
     jwt_token: str
     file_path: str
@@ -20,3 +18,5 @@ class TranslationTask(SQLModel, table=True):
     translation_end_time: Optional[datetime]
     status: str
     error_message: Optional[str]
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)

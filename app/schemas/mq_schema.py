@@ -17,6 +17,7 @@ class EventType(str, Enum):
 class TranslationRequest(BaseModel):
     """翻译请求消息体"""
     file_path: str = Field(..., description="文件路径")
+    filename: str = Field(..., description="文件名")
     jwt: str = Field(..., description="JWT token")
     uuid: str = Field(..., description="任务ID")
     event_type: EventType = Field(..., description="事件类型")

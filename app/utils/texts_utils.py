@@ -4,27 +4,29 @@ import json
 
 logger = logging.getLogger(__name__)
 
-# 分段函数
-def split_json_chunks(max_chars: int, index_and_text: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+def split_json_chunks(texts: List[str],max_chars: int) -> List[List[str]]:
     chunks = []
     current_chunk = []
     current_length = 0
-    for item in index_and_text:
-        item_str = json.dumps(item, ensure_ascii=False)  # 以实际发送的字符串长度为准
-        item_length = len(item_str)
-        # 如果加上当前 item 会超过最大限制，则新建一个 chunk
-        if current_length + item_length > max_chars:
+
+    for text in texts:
+        text_str = json.dumps(text, ensure_ascii=False)  # 模拟真实发送长度
+        text_length = len(text_str)
+
+        if current_length + text_length > max_chars:
             if current_chunk:
                 chunks.append(current_chunk)
-            current_chunk = [item]
-            current_length = item_length
+            current_chunk = [text]
+            current_length = text_length
         else:
-            current_chunk.append(item)
-            current_length += item_length
-    # 把最后一组加进去
+            current_chunk.append(text)
+            current_length += text_length
+
     if current_chunk:
         chunks.append(current_chunk)
+
     return chunks
+
 
 def format_prompts(chunks: List[List[str]], prompt_template: str) -> List[str]:
     """

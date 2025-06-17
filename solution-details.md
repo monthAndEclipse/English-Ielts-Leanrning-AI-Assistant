@@ -14,14 +14,14 @@ python + FastApi + docker(后期可转k8s)
 消息体定义
    ```json
    {
-      "file_path":"xxx/{taskId}_content.json",
+      "file_path":"fixed_user_id/files/20250617/df350c49_123456_content.json",
+      "filename":"df350c49_123456_content.json",
       "jwt":"token",
-      "uuid": "taskId",
+      "uuid": "df350c49_123456",
       "event_type":"image_translation | doc_translation| video translation",
-      "prompt_template":"help me to translate following text to english,additional requirement/information:more formality, texts:{}",
-      "target_language": "english",
+     "prompt_template":"help me to translate following text to english,additional requirement/information:more formality, The output should be returned directly in JSON format, wrapped in a field with the key 'translation' and without any extra explanation and keep the index number(eg:1.,2.). texts:{}",      "target_language": "english",
       "instruction": "more formality",
-      "start_time": "发起的时间 YYYY-MM-DD HH24:mm:SS"
+      "start_time": "发起的时间 datetime.now(timezone.utc).isoformat()"
    }
    ```
 xxx/{taskId}_content.json 内容定义：
