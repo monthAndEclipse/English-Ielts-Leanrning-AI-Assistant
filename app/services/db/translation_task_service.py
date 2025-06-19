@@ -1,4 +1,5 @@
-from datetime import datetime
+import json
+from datetime import datetime,timezone
 from typing import Optional,Dict,Any
 from sqlalchemy import update
 from app.db.models.translation_task import  TranslationTask
@@ -17,13 +18,12 @@ def create_translation_task(payload: TranslationRequest) -> TranslationTask:
         task = TranslationTask(
             task_id=payload.uuid,
             event_type=payload.event_type,
-            jwt_token=payload.jwt,
-            file_path=payload.file_path,
             prompt_template=payload.prompt_template,
             target_language=payload.target_language,
             instruction=payload.instruction,
-            start_time=datetime.fromisoformat(payload.start_time),
-            status=TaskStatus.PENDING
+            receive_time=datetime.now(timezone.utc).isoformat(),
+            status=TaskStatus.PENDING,
+            message_payload= json.dumps(payload,ensure_ascii=False)
         )
         session.add(task)
         session.commit()
