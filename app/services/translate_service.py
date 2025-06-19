@@ -3,8 +3,7 @@ import logging
 from app.llm_client.factory import get_llm_client
 from app.config import get_settings
 from app.schemas.mq_schema import QueueConfig
-from app.services.db.translation_task_service import create_translation_task, update_translation_complete, \
-    update_translation_start
+from app.services.db.translation_task_service import create_translation_task, update_translation_task_fields
 from app.utils.storage_utils import download_file_text_from_storage, upload_file_to_storage
 from app.utils.texts_utils import split_json_chunks, format_prompts
 import json
@@ -24,7 +23,6 @@ class TranslateService:
         self.settings = get_settings()
         self.client = get_llm_client(self.settings.llm_default_provider, self.settings.llm_default_model)
         # 创建线程池用于处理后台翻译任务
-        self.executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix="translation-worker")
 
 
     async def create_task_record(self, payload: TranslationRequest) -> bool:
@@ -59,17 +57,16 @@ class TranslateService:
             # 步骤1: 下载并解析内容文件
             original_json = await download_file_text_from_storage(payload.file_path, payload.jwt)
             if not original_json:
-                update_translation_complete(task_id, error_message="内容文件为空")
+                update_translation_task_fields(task_id, {"error_message":"内容文件为空"})
                 return False
             # 切割
             chunks = split_json_chunks(original_json["texts"], self.settings.llm_prompt_max_chars)
             if not chunks:
-                update_translation_complete(task_id, error_message="文本切割后为空")
+                update_translation_task_fields(task_id, {"error_message": "文本切割后为空"})
                 return False
             # 拼成一个个成品prompt
             prompts = format_prompts(chunks, payload.prompt_template)
-            logger.debug(f"开始并发翻译，更新数据库状态")
-            update_translation_start(task_id)
+            logger.debug(f"开始并发翻译")
             # 并发翻译
             translated_contents = await self.translate_large_text(prompts)
             # 填回原内容
@@ -78,15 +75,14 @@ class TranslateService:
             object_info = await upload_file_to_storage(payload.jwt,json.dumps(original_json, ensure_ascii=False).encode("utf-8"), f"translated_{payload.filename}")
             # 更新数据库
             if not object_info or not object_info["data"]:
-                update_translation_complete(task_id, error_message="翻译后的文件上传云存储失败")
+                update_translation_task_fields(task_id, {"error_message": "翻译后的文件上传云存储失败"})
                 return False
-
-            update_translation_complete(task_id, file_path=object_info["data"]["file_path"])
+            update_translation_task_fields(task_id, {"file_path":object_info["data"]["file_path"]})
             # 发送完成的消息到mq
             result = TranslationResult(
                 uuid=payload.uuid,
                 jwt=payload.jwt,
-                file_path=payload.file_path,
+                file_path=object_info["data"]["file_path"],
                 translation_end_time=datetime.now(timezone.utc).isoformat()
             )
             if payload.event_type.lower() ==  EventType.DOC_TRANSLATION :
@@ -95,13 +91,11 @@ class TranslateService:
                 await service_manager.publish_translation_result(QueueConfig.RESULT_QUEUES[EventType.IMAGE_TRANSLATION], result)
             elif payload.event_type.lower() == EventType.VIDEO_TRANSLATION:
                 await service_manager.publish_translation_result(QueueConfig.RESULT_QUEUES[EventType.VIDEO_TRANSLATION],result)
-
             logger.info(f"翻译任务完成: {task_id}")
             return True
         except Exception as e:
-            logger.error(f"翻译任务处理失败: {task_id}, 错误: {e}")
             logger.exception(f"翻译任务处理失败详情")
-            update_translation_complete(task_id, error_message=str(e))
+            update_translation_task_fields(task_id, {"error_message": f"{str(e)}"})
             return False
 
     async def translate_large_text(self, prompts: List[str]):
@@ -151,10 +145,7 @@ class TranslateService:
         return None
 
     def __del__(self):
-        """清理线程池资源"""
-        if hasattr(self, 'executor'):
-            self.executor.shutdown(wait=False)
-
+        pass
 
 # 创建全局服务实例
 translate_service = TranslateService()
@@ -162,7 +153,7 @@ translate_service = TranslateService()
 
 async def handle_translation_request(request: TranslationRequest) -> None:
     try:
-        #立即创建任务记录入库
+        #立即创建任务记录入库,task_id唯一，这里后期可以考虑加入分布式锁，但数据库压力感觉不会太大
         task_created = await translate_service.create_task_record(request)
         if not task_created:
             logger.error(f"入库失败")

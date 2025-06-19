@@ -28,6 +28,7 @@ xxx/{taskId}_content.json 内容定义：
 
 ```json
 {
+  "task_id": "xxxx",
   "texts":[
   "1.待翻译内容",
   "2.待翻译内容",
@@ -84,3 +85,5 @@ video.translation.result.queue
 目前使用的认证是supabase的，前端登录完之后调用后端接口会携带jwt token, 拿到token
 直接去到supabase-auth-service里面先验证一遍，有效就获取用户信息。
 可以先生成临时的假的user_id方便开发
+
+### 文件也要定时删除,每天删前一天的数据就行
