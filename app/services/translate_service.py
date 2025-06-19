@@ -73,7 +73,9 @@ class TranslateService:
             # 填回原内容
             original_json["texts"] = translated_contents
             # 转成字符数组上传
-            object_info = await upload_file_to_storage_sync(payload.jwt,json.dumps(original_json, ensure_ascii=False).encode("utf-8"), f"translated_{payload.filename}")
+            object_info = upload_file_to_storage_sync(payload.jwt,
+                                                      json.dumps(original_json, ensure_ascii=False).encode("utf-8"),
+                                                      f"translated_{payload.filename}")
             # 更新数据库
             if not object_info or not object_info["data"]:
                 update_translation_task_fields(task_id, {"status":TaskStatus.FAIL,"error_message": "翻译后的文件上传云存储失败"})
@@ -85,7 +87,7 @@ class TranslateService:
                 jwt=payload.jwt,
                 file_path=object_info["data"]["file_path"],
                 translation_end_time=datetime.now(timezone.utc).isoformat()
-            ),ensure_ascii=False)
+            ).model_dump(),ensure_ascii=False)
 
             if payload.event_type.lower() ==  EventType.DOC_TRANSLATION :
                 await service_manager.publish_msg(QueueConfig.P_RESULT_QUEUES[EventType.DOC_TRANSLATION], result)
@@ -96,13 +98,16 @@ class TranslateService:
             update_translation_task_fields(task_id, {
                 "result_file_path": object_info["data"]["file_path"],
                 "status": TaskStatus.COMPLETE,
-                "translation_end_time": datetime.now(timezone.utc).isoformat(),
+                "translation_end_time": datetime.now(timezone.utc).isoformat()
             })
             logger.info(f"翻译任务完成: {task_id}")
             return True
         except Exception as e:
             logger.exception(f"翻译任务处理失败详情")
-            update_translation_task_fields(task_id, {"error_message": f"{str(e)}","status":TaskStatus.FAIL})
+            update_translation_task_fields(task_id, {
+                "error_message": f"{str(e)}",
+                "status":TaskStatus.FAIL
+                })
             return False
 
     async def translate_large_text(self, prompts: List[str]):

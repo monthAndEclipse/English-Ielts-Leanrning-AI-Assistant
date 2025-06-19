@@ -23,7 +23,7 @@ def create_translation_task(payload: TranslationRequest) -> TranslationTask:
             instruction=payload.instruction,
             receive_time=datetime.now(timezone.utc).isoformat(),
             status=TaskStatus.PENDING,
-            message_payload= json.dumps(payload,ensure_ascii=False)
+            message_payload= json.dumps(payload.model_dump(), ensure_ascii=False)
         )
         session.add(task)
         session.commit()

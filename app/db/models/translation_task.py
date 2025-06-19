@@ -8,12 +8,12 @@ class TranslationTask(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     task_id: str = Field(index=True, unique=True)
     event_type: str
-    user_id: str
-    result_file_path: str
-    prompt_template: str
-    target_language: str
+    user_id: Optional[str]
+    result_file_path:Optional[str]
+    prompt_template: Optional[str]
+    target_language:Optional[str]
     instruction: Optional[str]
-    receive_time: datetime
+    receive_time: Optional[datetime]
     translation_start_time: Optional[datetime]
     translation_end_time: Optional[datetime]
     status:  Optional[str]
