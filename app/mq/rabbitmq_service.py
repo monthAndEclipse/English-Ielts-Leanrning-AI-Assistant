@@ -59,7 +59,6 @@ class RabbitMQService:
         if not self._initialized:
             await self.initialize()
 
-        logger.info("启动监听服务...")
         await self.consumer.start_consuming(
             queue_name,
             handler,

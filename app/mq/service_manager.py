@@ -53,7 +53,6 @@ class ServiceManager:
 
                 await self._rabbitmq_service.initialize()
                 self._initialized = True
-                logger.info("服务管理器初始化成功")
 
             except Exception as e:
                 logger.error(f"服务管理器初始化失败: {e}")
@@ -67,14 +66,12 @@ class ServiceManager:
     ) -> None:
         if not self._initialized:
             await self.initialize()
-        logger.info(f"启动监听消息服务队列：{queue}...")
         await self._rabbitmq_service.consuming_msg(
             queue,
             handler,
             message_cls,
             get_settings().max_concurrent_messages
         )
-        logger.info("启动监听消息服务队列：{queue}成功")
 
 
     async def publish_msg(

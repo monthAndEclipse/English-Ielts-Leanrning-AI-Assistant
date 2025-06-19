@@ -4,7 +4,7 @@ from app.llm_client.factory import get_llm_client
 from app.config import get_settings
 from app.schemas.mq_schema import QueueConfig
 from app.services.db.translation_task_service import create_translation_task, update_translation_task_fields
-from app.utils.storage_utils import download_file_text_from_storage, upload_file_to_storage
+from app.utils.storage_utils import download_file_text_from_storage_sync, upload_file_to_storage_sync
 from app.utils.texts_utils import split_json_chunks, format_prompts
 import json
 from typing import List
@@ -52,7 +52,7 @@ class TranslateService:
         task_id = payload.uuid
         try:
             # 步骤1: 下载并解析内容文件
-            original_json = await download_file_text_from_storage(payload.file_path, payload.jwt)
+            original_json = download_file_text_from_storage_sync(payload.file_path, payload.jwt)
             if not original_json:
                 update_translation_task_fields(task_id, {"error_message":"内容文件为空"})
                 return False
@@ -69,7 +69,7 @@ class TranslateService:
             # 填回原内容
             original_json["texts"] = translated_contents
             # 转成字符数组上传
-            object_info = await upload_file_to_storage(payload.jwt,json.dumps(original_json, ensure_ascii=False).encode("utf-8"), f"translated_{payload.filename}")
+            object_info = await upload_file_to_storage_sync(payload.jwt,json.dumps(original_json, ensure_ascii=False).encode("utf-8"), f"translated_{payload.filename}")
             # 更新数据库
             if not object_info or not object_info["data"]:
                 update_translation_task_fields(task_id, {"error_message": "翻译后的文件上传云存储失败"})
