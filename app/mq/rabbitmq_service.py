@@ -7,10 +7,10 @@ from typing import Callable, Optional,Dict,Any
 from app.mq.connection_manager import RabbitMQConnectionManager
 from app.mq.message_publisher import MessagePublisher
 from app.mq.message_consumer import MessageConsumer
-from app.schemas.mq_schema import TranslationRequest, TranslationResult, EventType
+from typing import TypeVar,Type,Union,Awaitable
 
 logger = logging.getLogger(__name__)
-
+T = TypeVar("T")
 
 class RabbitMQService:
     """RabbitMQ服务封装"""
@@ -41,64 +41,41 @@ class RabbitMQService:
             self._initialized = True
             logger.info("RabbitMQ服务初始化完成")
 
-    async def start_translation_service(
+    async def consuming_msg(
             self,
-            translation_handler: Callable[[TranslationRequest], None],
+            queue_name: str,
+            handler: Callable[[T], Union[Awaitable[None], None]],
+            message_cls: Type[T],
             max_concurrent_messages: int = 5
     ) -> None:
         """
         启动翻译服务
-
         Args:
-            translation_handler: 翻译处理函数
+            queue_name:队列名称
+            handler: 翻译处理函数
+            message_cls: 泛型
             max_concurrent_messages: 最大并发处理消息数
         """
         if not self._initialized:
             await self.initialize()
 
-        logger.info("启动翻译服务...")
-        await self.consumer.start_translation_consumer(
-            translation_handler,
+        logger.info("启动监听服务...")
+        await self.consumer.start_consuming(
+            queue_name,
+            handler,
+            message_cls,
             max_concurrent_messages
         )
 
-    async def publish_translation_result(
-            self,
-            event_type: EventType,
-            result: TranslationResult
-    ) -> bool:
-        """
-        发布翻译结果
-
-        Args:
-            event_type: 事件类型
-            result: 翻译结果
-
-        Returns:
-            bool: 发送成功返回True
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return await self.publisher.publish_translation_result(event_type, result)
-
-    async def publish_message(
+    async def publish_msg(
             self,
             queue: str,
-            message: Dict[str, Any]
+            msg: str
     ) -> bool:
-        """
-        发布翻译结果
-        Args:
-            queue: 队列
-            message: 消息
-        Returns:
-            bool: 发送成功返回True
-        """
         if not self._initialized:
             await self.initialize()
 
-        return await self.publisher.publish_message(queue, message)
+        return await self.publisher.publish_message(queue, msg)
 
 
     async def health_check(self) -> bool:

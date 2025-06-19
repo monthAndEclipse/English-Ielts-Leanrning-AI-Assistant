@@ -8,7 +8,9 @@ from typing import Optional, Callable
 from .rabbitmq_service import RabbitMQService
 from app.schemas.mq_schema import TranslationRequest, TranslationResult, EventType
 from app.config import get_settings
+from typing import TypeVar,Type
 
+T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
@@ -57,36 +59,36 @@ class ServiceManager:
                 logger.error(f"服务管理器初始化失败: {e}")
                 raise
 
-    async def start_translation_service(
+    async def consuming_msg(
             self,
-            translation_handler: Callable[[TranslationRequest], None]
+            queue:str,
+            handler: Callable[[T], None],
+            message_cls: Type[T]
     ) -> None:
-        """
-        启动翻译服务
-
-        Args:
-            translation_handler: 翻译处理函数
-        """
         if not self._initialized:
             await self.initialize()
-
-        self._translation_handler = translation_handler
-        await self._rabbitmq_service.start_translation_service(
-            translation_handler,
+        logger.info(f"启动监听消息服务队列：{queue}...")
+        await self._rabbitmq_service.consuming_msg(
+            queue,
+            handler,
+            message_cls,
             get_settings().max_concurrent_messages
         )
-        logger.info("翻译服务已启动")
+        logger.info("启动监听消息服务队列：{queue}成功")
 
-    async def publish_translation_result(
+
+    async def publish_msg(
             self,
-            event_type: EventType,
-            result: TranslationResult
+            queue: str,
+            result: str
     ) -> bool:
         """发布翻译结果"""
         if not self._initialized:
             await self.initialize()
 
-        return await self._rabbitmq_service.publish_translation_result(event_type, result)
+        return await self._rabbitmq_service.publish_msg(queue, result)
+
+
 
     async def health_check(self) -> bool:
         """健康检查"""

@@ -3,15 +3,17 @@
 负责监听RabbitMQ队列并处理接收到的消息
 """
 import json
-import logging
+from app.utils.logger import get_logger
 import asyncio
 from typing import Callable, Optional, Dict, Any
 from aio_pika import IncomingMessage
 from aio_pika.abc import AbstractIncomingMessage
 from .connection_manager import RabbitMQConnectionManager
 from app.schemas.mq_schema import TranslationRequest, QueueConfig
+from typing import TypeVar,Type,Union,Awaitable
 
-logger = logging.getLogger(__name__)
+T = TypeVar("T")
+logger = get_logger(__name__)
 
 
 class MessageConsumer:
@@ -26,6 +28,7 @@ class MessageConsumer:
             self,
             queue_name: str,
             message_handler: Callable[[TranslationRequest], None],
+            message_cls: Type[T],
             max_concurrent_messages: int = 5
     ) -> None:
         """
@@ -34,6 +37,7 @@ class MessageConsumer:
         Args:
             queue_name: 队列名称
             message_handler: 消息处理函数
+            message_cls: 泛型
             max_concurrent_messages: 最大并发处理消息数
         """
         if self._consuming:
@@ -55,7 +59,7 @@ class MessageConsumer:
 
             # 创建消息处理函数的包装器
             async def message_wrapper(message: AbstractIncomingMessage):
-                await self._process_message(message, message_handler)
+                await self._process_message(message, message_handler,message_cls)
 
             # 开始消费
             consumer_tag = await queue.consume(message_wrapper)
@@ -71,7 +75,8 @@ class MessageConsumer:
     async def _process_message(
             self,
             message: AbstractIncomingMessage,
-            handler: Callable[[TranslationRequest], None]
+            handler: Callable[[TranslationRequest], None],
+            message_cls: Type[T]
     ) -> None:
         """
         处理单个消息
@@ -86,7 +91,7 @@ class MessageConsumer:
             logger.info(f"接收到消息: {message_body.get('uuid', 'unknown')}")
 
             # 验证消息格式
-            translation_request = TranslationRequest(**message_body)
+            translation_request = message_cls(**message_body)
 
             # 调用处理函数（异步处理）
             if asyncio.iscoroutinefunction(handler):
@@ -108,22 +113,6 @@ class MessageConsumer:
             logger.error(f"消息处理失败: {e}")
             await message.reject(requeue=False)  # 依旧丢掉
 
-    async def start_translation_consumer(
-            self,
-            message_handler: Callable[[TranslationRequest], None],
-            max_concurrent_messages: int = 5
-    ) -> None:
-        """
-        开始消费翻译队列
-        Args:
-            message_handler: 消息处理函数
-            max_concurrent_messages: 最大并发处理消息数
-        """
-        await self.start_consuming(
-            QueueConfig.TRANSLATION_QUEUE,
-            message_handler,
-            max_concurrent_messages
-        )
 
     async def stop_consuming(self, queue_name: Optional[str] = None) -> None:
         """

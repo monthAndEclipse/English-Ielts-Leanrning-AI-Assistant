@@ -7,11 +7,10 @@ from app.services.db.translation_task_service import create_translation_task, up
 from app.utils.storage_utils import download_file_text_from_storage, upload_file_to_storage
 from app.utils.texts_utils import split_json_chunks, format_prompts
 import json
-from typing import List, Dict, Any, Set
+from typing import List
 import asyncio
 from app.mq.service_manager import service_manager
 from datetime import datetime, timezone
-from concurrent.futures import ThreadPoolExecutor
 
 
 logger = logging.getLogger(__name__)
@@ -22,8 +21,6 @@ class TranslateService:
     def __init__(self):
         self.settings = get_settings()
         self.client = get_llm_client(self.settings.llm_default_provider, self.settings.llm_default_model)
-        # 创建线程池用于处理后台翻译任务
-
 
     async def create_task_record(self, payload: TranslationRequest) -> bool:
         """创建任务记录"""
@@ -79,18 +76,19 @@ class TranslateService:
                 return False
             update_translation_task_fields(task_id, {"file_path":object_info["data"]["file_path"]})
             # 发送完成的消息到mq
-            result = TranslationResult(
+            result = json.dumps(TranslationResult(
                 uuid=payload.uuid,
                 jwt=payload.jwt,
                 file_path=object_info["data"]["file_path"],
                 translation_end_time=datetime.now(timezone.utc).isoformat()
-            )
+            ),ensure_ascii=False)
+
             if payload.event_type.lower() ==  EventType.DOC_TRANSLATION :
-                await service_manager.publish_translation_result(QueueConfig.RESULT_QUEUES[EventType.DOC_TRANSLATION], result)
+                await service_manager.publish_msg(QueueConfig.P_RESULT_QUEUES[EventType.DOC_TRANSLATION], result)
             elif payload.event_type.lower() ==  EventType.IMAGE_TRANSLATION :
-                await service_manager.publish_translation_result(QueueConfig.RESULT_QUEUES[EventType.IMAGE_TRANSLATION], result)
+                await service_manager.publish_msg(QueueConfig.P_RESULT_QUEUES[EventType.IMAGE_TRANSLATION], result)
             elif payload.event_type.lower() == EventType.VIDEO_TRANSLATION:
-                await service_manager.publish_translation_result(QueueConfig.RESULT_QUEUES[EventType.VIDEO_TRANSLATION],result)
+                await service_manager.publish_msg(QueueConfig.P_RESULT_QUEUES[EventType.VIDEO_TRANSLATION],result)
             logger.info(f"翻译任务完成: {task_id}")
             return True
         except Exception as e:

@@ -9,6 +9,7 @@ import os
 from app.mq.service_manager import service_manager
 import logging
 from app.services.translate_service import handle_translation_request
+from app.schemas.mq_schema import QueueConfig,TranslationRequest
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ async def lifespan(app: FastAPI):
         # 初始化RabbitMQ
         await service_manager.initialize()
         # 启动翻译服务监听器
-        await service_manager.start_translation_service(handle_translation_request)
+        await service_manager.consuming_msg(QueueConfig.C_TRANSLATION_QUEUE,handle_translation_request,TranslationRequest)
         logger.info("应用启动完成")
         yield
 

@@ -46,10 +46,10 @@ class TranslationResult(BaseModel):
 class QueueConfig:
     """队列配置"""
     # 输入队列
-    TRANSLATION_QUEUE = "llm.translation.queue"
+    C_TRANSLATION_QUEUE = "llm.translation.queue"
 
     # 结果队列映射
-    RESULT_QUEUES = {
+    P_RESULT_QUEUES = {
         EventType.DOC_TRANSLATION: "doc.translation.result.queue",
         EventType.IMAGE_TRANSLATION: "image.translation.result.queue",
         EventType.VIDEO_TRANSLATION: "video.translation.result.queue",
@@ -58,4 +58,4 @@ class QueueConfig:
     @classmethod
     def get_result_queue(cls, event_type: EventType) -> str:
         """根据事件类型获取结果队列名称"""
-        return cls.RESULT_QUEUES.get(event_type, "default.translation.result.queue")
+        return cls.P_RESULT_QUEUES.get(event_type, "default.translation.result.queue")
