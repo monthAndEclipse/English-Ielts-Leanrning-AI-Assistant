@@ -17,6 +17,7 @@ def create_translation_task(session:Session,payload: TranslationRequest) -> Tran
     task = TranslationTask(
         task_id=payload.uuid,
         event_type=payload.event_type,
+        user_id=payload.user_id,
         prompt_template=payload.prompt_template,
         target_language=payload.target_language,
         instruction=payload.instruction,
