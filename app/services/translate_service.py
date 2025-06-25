@@ -23,16 +23,6 @@ class TranslateService:
         self.settings = get_settings()
         self.client = get_llm_client(self.settings.llm_default_provider, self.settings.llm_default_model)
 
-    async def create_task_record(self, payload: TranslationRequest) -> bool:
-        """创建任务记录"""
-        try:
-            create_translation_task(payload)
-            logger.info(f"任务记录创建成功: {payload.uuid}")
-            return True
-        except Exception as e:
-            logger.error(f"创建任务记录失败: {payload.uuid}, 错误: {e}")
-            logger.exception("创建任务记录失败")
-            return False
 
     def run_translation_in_background(self, payload: TranslationRequest):
         """
@@ -179,7 +169,7 @@ async def handle_translation_request(request: TranslationRequest) -> None:
             # 启动后台线程处理翻译任务
             translate_service.run_translation_in_background(request)
             # 立即返回成功响应
-            logger.info(f"翻译请求已接收并开始处理: {request.uuid}")
+            logger.info(f"翻译请求已接收并开始处理: {request.uuid},{request.user_id}")
         except Exception as e:
             logger.error(f"处理翻译请求异常: {getattr(request, 'uuid', 'unknown')}, 错误: {e}")
 
