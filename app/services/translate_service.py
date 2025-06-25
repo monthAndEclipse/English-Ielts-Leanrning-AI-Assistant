@@ -97,7 +97,7 @@ class TranslateService:
                     await service_manager.publish_msg(QueueConfig.P_RESULT_QUEUES[EventType.IMAGE_TRANSLATION], result)
                 elif payload.event_type.lower() == EventType.VIDEO_TRANSLATION:
                     await service_manager.publish_msg(QueueConfig.P_RESULT_QUEUES[EventType.VIDEO_TRANSLATION],result)
-                update_translation_task_fields(task_id, {
+                update_translation_task_fields(session,task_id, {
                     "result_file_path": object_info["data"]["file_path"],
                     "status": TaskStatus.COMPLETE,
                     "translation_end_time": datetime.now(timezone.utc).isoformat()
