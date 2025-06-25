@@ -54,7 +54,7 @@ class TranslateService:
             task_id = payload.uuid
             try:
                 # 步骤1: 下载并解析内容文件
-                original_json = download_file_text_from_storage_sync(payload.file_path, payload.jwt)
+                original_json = download_file_text_from_storage_sync(payload.file_path, payload.user_id)
                 if not original_json:
                     update_translation_task_fields(session,task_id, {"status":TaskStatus.FAIL,"error_message":"内容文件为空"})
                     return False
@@ -75,7 +75,7 @@ class TranslateService:
                 # 填回原内容
                 original_json["texts"] = translated_contents
                 # 转成字符数组上传
-                object_info = upload_file_to_storage_sync(payload.jwt,
+                object_info = upload_file_to_storage_sync(payload.user_id,
                                                           json.dumps(original_json, ensure_ascii=False).encode("utf-8"),
                                                           f"translated_{payload.filename}")
                 # 更新数据库
@@ -86,7 +86,7 @@ class TranslateService:
                 # 发送完成的消息到mq
                 result = json.dumps(TranslationResult(
                     uuid=payload.uuid,
-                    jwt=payload.jwt,
+                    user_id=payload.user_id,
                     file_path=object_info["data"]["file_path"],
                     translation_end_time=datetime.now(timezone.utc).isoformat()
                 ).model_dump(),ensure_ascii=False)

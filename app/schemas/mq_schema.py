@@ -18,7 +18,7 @@ class TranslationRequest(BaseModel):
     """翻译请求消息体"""
     file_path: str = Field(..., description="文件路径")
     filename: str = Field(..., description="文件名")
-    jwt: str = Field(..., description="JWT token")
+    user_id: str = Field(..., description="user_id")
     uuid: str = Field(..., description="任务ID")
     event_type: EventType = Field(..., description="事件类型")
     prompt_template: str = Field(..., description="提示模板")
@@ -38,7 +38,7 @@ class TranslationContent(BaseModel):
 class TranslationResult(BaseModel):
     """翻译结果消息体"""
     uuid: str = Field(..., description="任务ID")
-    jwt: str = Field(..., description="JWT token")
+    user_id: str = Field(..., description="user_id")
     file_path: str = Field(..., description="新的文件路径")
     translation_end_time: str = Field(..., description="翻译结束时间 YYYY-MM-DD HH24:mm:SS")
 
