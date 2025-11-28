@@ -9,9 +9,9 @@ class DeepSeekClient(BaseLLMClient):
     # singleton is fine
     _shared_client = None
 
-    def __init__(self, model_name: str = None):
+    def __init__(self, model_name: str = None,api_key: str = None):
         if not DeepSeekClient._shared_client:
-            DeepSeekClient._shared_client = OpenAI(api_key="",base_url="https://api.deepseek.com")
+            DeepSeekClient._shared_client = OpenAI(api_key=api_key,base_url="https://api.deepseek.com")
         self.client = DeepSeekClient._shared_client
         self.model_name = model_name
 

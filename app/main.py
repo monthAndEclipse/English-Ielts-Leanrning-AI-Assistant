@@ -23,6 +23,8 @@ def base_path() -> Path:
 
 BASE_DIR = base_path()
 FRONTEND_DIR = BASE_DIR / "frontend" / "out"
+STATIC_DIR = BASE_DIR / "app" / "static"
+
 
 app = FastAPI(docs_url=None,redoc_url=None)
 
@@ -32,10 +34,11 @@ app.mount(
     StaticFiles(directory=FRONTEND_DIR / "_next"),
     name="nextjs-static"
 )
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 #路由设置
 app.include_router(task_router, prefix="/api/v1", tags=["task"])
-app.include_router(config_router, tags=["config"])
+app.include_router(config_router, prefix="/api/v1",tags=["config"])
 
 # 2. 处理前端路由（非常重要）
 @app.get("/{full_path:path}")
@@ -79,4 +82,4 @@ if __name__ == "__main__":
 
 # uvicorn app.main:app --reload
 # pip freeze > requirements.txt
-#pyinstaller --onefile --add-data "frontend/out;frontend/out" --add-data "app/config/settings.yml;config" --name ai_server --hidden-import=uvicorn.protocols.http --hidden-import=uvicorn.protocols.websockets --hidden-import=uvicorn.lifespan.on app/main.py
+#pyinstaller --onefile --add-data "app/static;app/static" --add-data "frontend/out;frontend/out" --add-data "app/config/settings.yml;config" --name ai_server --hidden-import=uvicorn.protocols.http --hidden-import=uvicorn.protocols.websockets --hidden-import=uvicorn.lifespan.on app/main.py
