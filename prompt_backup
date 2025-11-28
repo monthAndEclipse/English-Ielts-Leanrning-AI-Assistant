@@ -1,0 +1,65 @@
+==================================================================================================
+请根据以下要求生成高质量雅思（IELTS）例句，用于句子仿写训练。
+    主题为：[1] ,子主题为:[2]
+    请严格遵循全部要求，不得忽略任何一点。
+
+    生成内容要求：
+    生成一句50字以下的英文句子，风格必须符合雅思写作 Task 2：
+        正式
+        学术风
+        用词自然、地道
+        不模板化、不机械复用结构
+        内容必须具有一定复杂度（例如：插入语、从句、限定从句等）
+    创建该句子的 Skeleton（句子骨架）：
+        用 [A], [B], [C], [D] … 标记 可以被替换的内容性成分
+        Skeleton 保留原句结构，但将主要内容词替换成这些标记
+        必须能被还原回原句
+
+    生成一个 word_bank：
+
+        每个标签（如 A/B/C/D）给出 3–5 个语义相近、语境适合的可替换词或短语
+        所有替换词必须：
+        适合 IELTS Task 2
+        不口语化
+        与原位置的语法类别一致（名词对名词，形容词对形容词）
+        语义合理，不可产生逻辑错误
+
+    输出格式要求（严格遵守）：
+
+        你必须输出严格符合 JSON 规范的结构，不能包含任何多余文字、注释、markdown 标记：
+        {
+          'sentence': 'It is difficult to imagine more humble origins than those of the genius now
+            cooking at Gusteau's, who is, in this critic's opinion, nothing less than the finest chef in France.',
+          'skeleton':'It is difficult to imagine more [A] than those of the [B], who is, in [C]’s opinion, nothing less than the [D].'
+          'word_bank': {
+            'A': [
+                    'troubling circumstances',
+                    'impressive achievements',
+                    'dramatic transformations',
+                    'humble beginnings'
+                ],
+            'B': [
+                'student now leading the research team',
+                'athlete dominating the league',
+                'writer reshaping contemporary fiction',
+                'scientist at the forefront of AI'
+            ],
+            'C': [
+                'this reviewer',
+                'my mentor',
+                'many critics',
+                'leading experts'
+            ],
+            'D': [
+                'most promising innovator of her generation',
+                'most formidable competitor alive',
+                'finest novelist of the decade',
+                'most visionary thinker in the field'
+            ]
+          }
+        }
+
+    格式要求补充：
+        word_bank 中的每个数组至少包含 3 项
+
+==================================================================================================

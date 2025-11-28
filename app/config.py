@@ -1,78 +1,66 @@
-from pydantic_settings import BaseSettings
-from pydantic import  Field
-from app.utils.consul_utils import get_config
-import os
+import yaml
+from pydantic import BaseModel
+import sys
+from pathlib import Path
 
-"""
-统一配置，有些是os.getenv 有些是从consul获取的，统一在这里调整吧
-不是和启动强关联的配置项，有些不敏感的可以存consul,有些敏感的直接os.getenv()
-"""
-class Settings(BaseSettings):
-    # 应用配置
-    app_name: str = "LLM Service"
-    app_version: str = "1.0.0"
-    debug: bool = False
+class AppConfig(BaseModel):
+    name: str
+    debug: bool
+    version: str
 
-    # 云存储服务配置
-    storage_service_container: str = Field(default="localhost:8002")
-
-    """RabbitMQ配置"""
-    host: str = Field(default="localhost")
-    port: int =  Field(default=5672)
-    username: str = Field(default="admin")
-    password: str = Field(default="admin")
-    virtual_host: str = Field(default="/")
-
-    # 连接配置
-    heartbeat: int = Field(default=30)
-    blocked_connection_timeout: int = Field(default=300)
-
-    # 消费者配置
-    max_concurrent_messages: int = Field(default=5)
-    prefetch_count: int = Field(default=10)
-
-    # 翻译服务配置
-    max_concurrent_translations: int = Field(default=3)
-    max_chunk_size: int = Field(default=1000)
-
-    #llm 配置
-    llm_default_provider:str = Field(default="deepseek")
-    llm_default_model:str = Field(default="deepseek-chat")
-    llm_agent_role:str = Field(default="you are a translation engine")
-    llm_prompt_max_chars:int = Field(default=3000)
-    llm_max_concurrent_task:int = Field(default=10)
-    llm_max_retries:int = Field(default=1)
-    llm_retry_delay:int = Field(default=5)#second
-
-    def load_lazy(self):
-        self.max_concurrent_messages = int(get_config("/max_concurrent_messages", self.max_concurrent_messages))
-        self.prefetch_count = int(get_config("/prefetch_count", self.prefetch_count))
-        self.max_concurrent_translations = int(get_config("/max_concurrent_translations", self.max_concurrent_translations))
-        self.max_chunk_size = int(get_config("/max_chunk_size", self.max_chunk_size))
-        self.virtual_host = get_config("/virtual_host", "/")
-        """RabbitMQ配置"""
-        self.host: str = os.getenv("RABBITMQ_HOST")
-        self.port: int = int(os.getenv("RABBITMQ_PORT"))
-        self.username: str = os.getenv("RABBITMQ_USERNAME")
-        self.password: str = os.getenv("RABBITMQ_PASSWORD")
-        """LLM配置"""
-        self.llm_default_provider: str =  get_config("/llm_default_provider", self.llm_default_provider)
-        self.llm_default_model: str = get_config("/llm_default_model", self.llm_default_model)
-        self.llm_agent_role: str = get_config("/llm_agent_role", self.llm_agent_role)
-        self.llm_prompt_max_chars: int = int(get_config("/llm_prompt_max_chars", self.llm_prompt_max_chars))
-        self.llm_max_concurrent_task: int = int(get_config("/llm_max_concurrent_task", self.llm_max_concurrent_task))
-        self.llm_max_retries: int = int(get_config("/llm_max_retries", self.llm_max_retries))
-        self.llm_retry_delay: int = int(get_config("/llm_retry_delay", self.llm_retry_delay))
-        """云存储服务容器名称"""
-        self.storage_service_container: str = os.getenv("STORAGE_SERVICE_CONTAINER")
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+class LLMConfig(BaseModel):
+    provider:str
+    model:str
+    retries:int
+    retry_delay:int
 
 
-def get_settings():
-    settings = Settings()
-    # 全局配置实例,延迟加载
-    settings.load_lazy()
-    return settings
+class Prompts(BaseModel):
+    subtopics_start:str
+    synonym_start:str
+    synonym_correct:str
+    sentence_start:str
+    sentence_correct:str
+    paragraph_start:str
+    paragraph_correct:str
+    summary_start:str
+    summary_correct:str
+    reading1_start:str
+    reading1_correct:str
+    reading2_start:str
+    reading2_correct:str
+    reading3_start:str
+    reading3_correct:str
+    writing1_start:str
+    writing1_correct:str
+    writing2_start: str
+    writing2_correct: str
+    sentence_upgrade_correct: str
+    sentence_translation_start: str
+    speaking_start: str
+
+class PromptConfig(BaseModel):
+    en:Prompts
+    zh:Prompts
+
+
+class Settings(BaseModel):
+    app: AppConfig
+    llm: LLMConfig
+    prompt: PromptConfig
+
+
+def resource_path(relative_path: str) -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS) / relative_path
+    return Path(__file__).resolve().parents[0] / relative_path
+    #              ↑ 回到 app/
+
+def load_settings(path: str = "config/settings.yml") -> Settings:
+    config_path = resource_path(path)
+    with open(config_path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    return Settings(**data)
+
+# 单例配置对象（全局可用）
+settings = load_settings()

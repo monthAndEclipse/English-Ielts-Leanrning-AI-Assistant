@@ -11,6 +11,6 @@ class OpenAIClient(BaseLLMClient):
     def __init__(self):
         self.client = OpenAI()
 
-    async def translate(self, prompt: str) -> str:
+    async def prompt(self, prompt: str) -> str:
         pass
 

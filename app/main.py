@@ -1,62 +1,82 @@
 from fastapi import FastAPI
-# from app.api.v1.storage_router import router as store_router
-from app.utils.consul_utils import ConsulServiceRegistrar, set_global_config
-from sqlmodel import SQLModel
-from contextlib import asynccontextmanager
-from app.db.database import engine
-from app.db.models import *
-import os
-from app.mq.service_manager import service_manager
+from app.api.v1.task_api import router as task_router
 import logging
-from app.services.translate_service import handle_translation_request
-from app.schemas.mq_schema import QueueConfig,TranslationRequest
+import os
+import sys
+import socket
+import uvicorn
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+from starlette.responses import FileResponse
+from app.api.v1.user_config_api import router as config_router
 
 logger = logging.getLogger(__name__)
+def base_path() -> Path:
+    """
+    项目根路径：
+    - 普通 python 运行：项目目录
+    - PyInstaller --onefile：_MEIPASS
+    """
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS)
+    return Path(__file__).resolve().parents[1]  # ← 回到项目根
 
+BASE_DIR = base_path()
+FRONTEND_DIR = BASE_DIR / "frontend" / "out"
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """FastAPI 应用生命周期管理"""
-    logger.info("启动应用...")
-    try:
-        # 启动 Consul 注册 + 配置拉取
-        consul_client = ConsulServiceRegistrar(
-            service_name=os.getenv("SERVICE_NAME"),
-            service_port=int(os.getenv("SERVICE_PORT")),
-            consul_host=os.getenv("CONSUL_HOST"),
-            config_prefix=os.getenv("CONSUL_CONFIG_PREFIX"),
-            update_interval=59,
-            hostname=os.getenv("HOSTNAME"),
-        )
-        consul_client.register_service()
-        consul_client.start_config_updater()
-        set_global_config(consul_client)
+app = FastAPI(docs_url=None,redoc_url=None)
 
-        # 数据库初始化
-        SQLModel.metadata.create_all(engine)
-        # 初始化RabbitMQ
-        await service_manager.initialize()
-        # 启动翻译服务监听器
-        await service_manager.consuming_msg(QueueConfig.C_TRANSLATION_QUEUE,handle_translation_request,TranslationRequest)
-        logger.info("应用启动完成")
-        yield
-
-    except Exception as e:
-        logger.error(f"应用启动失败: {e}")
-        raise
-    finally:
-        # 应用关闭时执行
-        logger.info("关闭应用...")
-        await service_manager.stop()
-        logger.info("应用已关闭")
-
-app = FastAPI(lifespan=lifespan)
-
-
+# 1. 挂载静态资源
+app.mount(
+    "/_next",
+    StaticFiles(directory=FRONTEND_DIR / "_next"),
+    name="nextjs-static"
+)
 
 #路由设置
-# app.include_router(log_router, prefix="/api/v1/log", tags=["Logs"])
+app.include_router(task_router, prefix="/api/v1", tags=["task"])
+app.include_router(config_router, tags=["config"])
+
+# 2. 处理前端路由（非常重要）
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    """
+    所有非 API 路由交给 Next.js 的 index.html
+    """
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"error": "frontend not found"}
+
+
+# -------------------------
+# 端口检测（防止重复启动）
+# -------------------------
+def port_in_use(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+
+# -------------------------
+# 程序入口
+# -------------------------
+if __name__ == "__main__":
+    PORT = 8080
+
+    if port_in_use(PORT):
+        print(f"[INFO] Port {PORT} already in use, exit")
+        sys.exit(0)
+
+    print(f"started....")
+    uvicorn.run(
+        app,
+        host="127.0.0.1",      # ✅ 非常重要
+        port=PORT,
+        log_level="error",    # ✅ 避免命令行刷屏
+        access_log=False,
+        reload=False
+    )
 
 # uvicorn app.main:app --reload
 # pip freeze > requirements.txt
-
+#pyinstaller --onefile --add-data "frontend/out;frontend/out" --add-data "app/config/settings.yml;config" --name ai_server --hidden-import=uvicorn.protocols.http --hidden-import=uvicorn.protocols.websockets --hidden-import=uvicorn.lifespan.on app/main.py

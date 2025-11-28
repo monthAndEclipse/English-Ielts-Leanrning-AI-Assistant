@@ -1,18 +1,21 @@
 from openai import OpenAI
 from .base_client import BaseLLMClient
 import logging
+from g4f.client import Client
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-class DeepSeekClient(BaseLLMClient):
+"""
+github开源的免费api工具, 好像只是开页面去抓取的，不是纯后端调用
+"""
+@DeprecationWarning
+class GPT4FreeClient(BaseLLMClient):
     # singleton is fine
     _shared_client = None
 
     def __init__(self, model_name: str = None):
-        if not DeepSeekClient._shared_client:
-            DeepSeekClient._shared_client = OpenAI(api_key="",base_url="https://api.deepseek.com")
-        self.client = DeepSeekClient._shared_client
+        if not GPT4FreeClient._shared_client:
+            GPT4FreeClient._shared_client = Client()
+        self.client = GPT4FreeClient._shared_client
         self.model_name = model_name
 
     def prompt(self, prompt: str) -> str:
@@ -23,21 +26,15 @@ class DeepSeekClient(BaseLLMClient):
                 messages=[
                     {"role": "user", "content": prompt},
                 ],
-                response_format={"type": "json_object"},
-                stream=True,
-                max_tokens=8000
+                web_search=False
             )
-            full_content = []
-            for chunk in response:
-                delta = getattr(chunk.choices[0].delta, 'content', None)
-                if delta:
-                    full_content.append(delta)
-            result = ''.join(full_content)
-            logger.info(result)
-            return result
+            print("RAW RESPONSE:", response)
+            print(response.choices[0].message.content)
+            return ""
 
         except Exception as e:
             logger.error(f"Translation failed: {e}")
             logger.exception("Translation failed details")
             raise e
+
 

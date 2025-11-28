@@ -1,5 +1,6 @@
 from app.llm_client.openai_client import OpenAIClient
 from app.llm_client.deepseek_client import DeepSeekClient
+from app.llm_client.gpt4free_client import GPT4FreeClient
 import logging
 # 未来可以引入 ClaudeClient, DeepseekClient 等
 
@@ -17,5 +18,7 @@ def get_llm_client(provider: str, model_name:str):
         return OpenAIClient(model_name)
     if provider == "deepseek":
         return DeepSeekClient(model_name)
+    if provider == "gpt4free":
+        return GPT4FreeClient(model_name)
     else:
         raise ValueError(f"Unsupported LLM provider and model: {provider}_{model_name}")

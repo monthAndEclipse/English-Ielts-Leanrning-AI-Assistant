@@ -1,0 +1,1087 @@
+app:
+  name: "My FastAPI App"
+  debug: true
+  version: "1.0.0"
+llm:
+  provider: "deepseek"
+  model: "deepseek-chat"
+  retries: 1
+  retry_delay: 5
+prompt:
+  en:
+    subtopics_start: ''
+    synonym_start: ""
+    synonym_correct: ""
+    sentence_start: ""
+    sentence_correct: ""
+    paragraph_start: ""
+    paragraph_correct: ""
+    summary_start: ""
+    summary_correct: ""
+    reading1_start: ""
+    reading1_correct: ""
+    reading2_start: ""
+    reading2_correct: ""
+    reading3_start: ""
+    reading3_correct: ""
+    writing1_start: ''
+    writing1_correct: ''
+    writing2_start: ''
+    writing2_correct: ''
+    sentence_upgrade_correct: ''
+    sentence_translation_start: ''
+    speaking_start: ''
+  zh:
+    subtopics_start: '
+      请根据我所提供的雅思大主题:[1], 生成10-20个该大主题下的子主题,
+      请输出如下 JSON 格式（严格符合 JSON 规范，无多余文字，无注释，无 markdown）：
+      {
+        "topic": "education",
+        "subtopics": [
+          "early childhood development",
+          "adult education",
+          "STEM enrollment",
+          "teacher qualification levels",
+          "home-schooling adoption",
+          "online learning usage",
+        ]
+      }
+    '
+    synonym_start: '
+    你现在是一名 IELTS 写作训练文章生成器（IELTS Writing Synonym Training Generator）。
+    ⚠️【最高优先级：字数要求】
+    你必须生成一篇 ** 150 到 300 个英文单词之间** 的英文文章。
+    此规则绝对严格（STRICT）。
+    不要生成少于 150 个单词。
+    不要生成超过 300 个单词。
+    如果字数不在范围内，你必须自动调整并重新生成文章。
+    在文章完成之后，再生成其他
+    
+    文章内容要求
+    - (非常重要)在文章中预留 **5–8 个“同义词训练词”**，替换标记为 [A]、[B]、[C]……（不要使用其他括号形式）
+    - 主题：[1]
+    - 子主题：[2]
+    - 标记词必须：
+      1. 分布在文章不同位置
+      2. 至少覆盖三种词性：名词、动词、形容词、副词
+      3. 学术性强，雅思常见
+    - 每个标记词在文章中只出现一次
+    
+    JSON 输出要求
+    - article 字段可以包含 \n 换行符
+    - markers 中的 key 必须与文章中的标记一一对应
+    - 标记数量 5–8 个
+    - 所有单词必须为英文小写字母，无标点
+    
+    最终 JSON 结构示例
+    {
+      "passage_title": "文章标题",
+      "article": "文章正文，每个标记词使用 [A]、[B]… 标记，例如 Education plays a crucial [A] in shaping individuals [B]. ...",
+      "markers": {
+        "A": "对应的原始英文单词",
+        "B": "对应的原始英文单词",
+        "C": "对应的原始英文单词"
+        // 至少 5 个，最多 8 个
+      }
+    }
+    '
+
+    synonym_correct: "
+    请你作为一名专业雅思写作/词汇教练，帮我批改同义词替换练习。
+    下面我会提供：
+      原始文章（其中的标记词格式为 (A)xxx, (B)xxx, (C)xxx ……）
+      我自己替换后的答案
+    你的任务目标是：
+      - 判断我替换每个标记词是否正确
+      - 对每个标记词生成详细反馈
+      - 对每个标记词生成详细反馈
+==================================================================
+    在生成每一个 detail 时，请严格遵循以下要求：
+      detail 必须包含不少于 4 个完整评价点，并清晰覆盖以下维度：
+      语义对等性：替换词与原词是否在当前语境下语义完全一致？是否存在语义缩小、扩大或偏移
+      语域与文体：是否符合原文的正式程度与学术/议论文语气
+      搭配与自然度：是否符合常见英语 collocation，用法是否地道自然，是否存在“中式高级词”问题
+      对 IELTS 写作分数的影响：该替换在 IELTS C1–C2 语境下是加分、无实质提升，还是潜在扣分点
+      如果 flag = false，还必须额外包含：
+      明确指出具体错误类型（语义偏差 / 语域不当 / 搭配错误 / 逻辑不合）
+      给出 1–3 个更合适的替换词或表达，并简要说明各自适用差异
+    
+      语言要求：
+        使用专业 IELTS 写作/词汇教学视角
+        给出“为什么不好/好”，而不仅仅是“好 / 不好”
+        避免模糊评价（如 “不太自然”、“不太合适”），必须具体说明原因  
+==================================================================      
+    输出格式要求（务必严格遵守）：
+        请使用下面的 JSON 结构 输出，且必须是有效 JSON（不要出现注释、不要添加额外文本）：
+        {
+          'details': {
+            'A': {
+              'flag': true,
+              'detail': '解释内容'
+            },
+            'B': {
+              'flag': false,
+              'detail': '解释内容'
+            }
+          }
+        }
+    说明：
+        flag：是否正确（true / false）
+        detail:
+        如果正确：说明为什么正确，有什么地道、自然、高级之处
+        如果错误：说明错误原因，正确词应该是什么，为什么你的替换不合适，有哪些更高级或更自然的表达
+        只输出 JSON，不要输出任何额外说明或自然语言正文。
+==================================================================    
+    现在开始批改的内容
+    原始文章：
+    [1]
+    
+    我的答案：
+    [2]
+    "
+    sentence_start: "
+    请根据以下要求生成高质量雅思（IELTS）例句，用于句子仿写训练。
+    主题为：[1] ,子主题为:[2]
+    请严格遵循全部要求，不得忽略任何一点。
+    生成内容要求：
+    - 生成一句50字以下的英文句子题目，风格必须符合雅思写作 Task 2：
+        正式
+        学术风
+        用词自然、地道
+        不模板化、不机械复用结构
+        内容必须具有一定复杂度（例如：插入语、从句、限定从句等）
+    - 以及生成三句和上面题目句子结构一致的，但语意场景不同的例句
+    
+    输出格式要求（严格遵守）：
+        你必须输出严格符合 JSON 规范的结构，不能包含任何多余文字、注释、markdown 标记：
+        {
+          'sentence': '原句',
+           'examples': [
+             '和题目句子结构一致的例句1',
+             '和题目句子结构一致的例句2',
+             '和题目句子结构一致的例句3',
+           ]
+        }
+    "
+    sentence_correct: "
+    请你作为一名专业雅思写作/词汇教练，帮我批改我仿写的句子。
+    你的任务目标是（非常重要，务必严格遵守）：
+      - detail字段 必须提供诊断和指导性内容，适当加入换行符换行美化输出
+    
+    输出格式要求（务必严格遵守）：
+    {
+      'details': {
+        'A': {
+          'flag': true,
+          'detail': '解释内容，必须覆盖以下维度：
+                     1. 语义准确性：与原句是否保持一致 
+                     2. 语法结构：句子结构是否正确
+                     3. 搭配与地道表达：用词和短语是否自然高级
+                     4. IELTS 写作价值：词汇和句式是否提升雅思分数
+                     ‘
+        },
+      }
+    }
+    
+    注意：
+    - 只输出 JSON，不要出现任何额外说明或自然语言正文
+    - 用户答案里的标记 A, B, C… 与 details key 对应
+    
+    现在开始批改的内容
+    原始题目的句子：
+    [1]
+    
+    我的答案：
+    [2]
+    "
+    paragraph_start: "
+    请根据以下要求生成高质量雅思（IELTS）主题段落，用于段落仿写
+    （最重要）生成内容要求：
+    -生成一句 100 字以下的英文段落，风格必须符合雅思写作 Task 2：
+        -正式
+        -学术风
+        -用词自然、地道
+        -不模板化、不机械复用结构
+        - 内容必须具有一定复杂度（例如：插入语、从句、限定从句等）
+    - 主题为：[1]，子主题: [2] 。
+    - 同时生成 2个 新的和原段落结构一致，但语意不同的段落作为例子(examples)
+    
+    
+    JSON输出格式要求（严格遵守）：
+    
+        你必须输出严格符合 JSON 规范的结构，不能包含任何多余文字、注释、markdown 标记：
+        {
+          'paragraph': 'It is difficult to imagine more humble origins than those of the genius now 
+            cooking at Gusteau's, who is, in this critic's opinion, nothing less than the finest chef in France.'
+          'examples':[
+            '新的和原段落结构一致的示例段落1',
+            '新的和原段落结构一致的示例段落2'
+          ]
+        }
+    "
+    paragraph_correct: "
+     请你作为一名专业雅思写作/词汇教练，帮我批改我仿写的段落
+      下面我会提供：
+        原始段落
+        我自己仿写的版本
+      
+      你的任务目标是：
+        - detail字段 必须提供诊断和指导性内容，适当加入换行符换行美化输出
+      
+      输出格式要求（务必严格遵守）：
+      {
+        'detail': '解释内容，必须覆盖以下维度：
+                   1. 语义准确性：用户段落是否保留原文意思，是否有偏差
+                   2. 语法结构：句型、时态、语态、从句使用是否正确
+                   3. 搭配与地道表达：词汇和短语是否自然、高级
+                   4. 逻辑连贯性：段落内部及句间逻辑是否顺畅
+                   5. 雅思写作价值：词汇和句式是否符合 C1-C2 级别，是否有提升分数价值
+                   '
+      }
+      
+      注意：
+      - 只输出 JSON，不要出现任何额外说明或自然语言正文
+
+    现在开始批改的内容
+    原始段落：
+    [1]
+    
+    我的答案：
+    [2]
+    "
+    summary_start: "
+    请根据以下要求生成高质量雅思（IELTS）主题文章，用于文章总结训练。主题为：[1],子主题[2]。
+    ⚠️【最高优先级：字数要求】
+    你必须生成一篇 ** 200 到 350 个英文单词之间** 的英文文章。
+    此规则绝对严格（STRICT）。
+    不要生成少于 200 个单词。
+    不要生成超过 350 个单词。
+    如果字数不在范围内，你必须自动调整并重新生成文章。
+    生成内容要求：
+    -正式
+    -学术风
+    -用词自然、地道
+    -不模板化、不机械复用结构
+    -内容必须具有一定复杂度（例如：插入语、从句、限定从句等）
+    -输出一篇高分示例总结
+    输出格式要求（严格遵守）：
+    
+        你必须输出严格符合 JSON 规范的结构，不能包含任何多余文字、注释、markdown 标记：
+        {
+          'passage_title':'标题'
+          'article': 'It is difficult to imagine more humble origins than those of the genius now 
+            cooking at Gusteau's, who is, in this critic's opinion, nothing less than the finest chef in France.'
+          'examples':[
+            '高分示例总结'
+          ]
+        }
+    "
+    summary_correct: "
+    请你作为一名专业雅思写作/词汇教练，帮我批改我对文章的总结
+    下面我会提供：
+      原始文章
+      我自己写的总结
+    你的任务目标是：
+      - detail字段 必须提供诊断和指导性内容，适当加入换行符换行美化输出
+      
+    输出格式要求（务必严格遵守）：
+        {
+          'detail': '解释内容，必须覆盖以下维度：
+                   1. 语义准确性：用户段落是否保留原文意思，是否有偏差
+                   2. 语法结构：句型、时态、语态、从句使用是否正确
+                   3. 搭配与地道表达：词汇和短语是否自然、高级
+                   4. 逻辑连贯性：段落内部及句间逻辑是否顺畅
+                   5. 雅思写作价值：词汇和句式是否符合 C1-C2 级别，是否有提升分数价值',
+        }
+    
+    说明：
+        只输出 JSON，不要输出任何额外说明或自然语言正文。
+
+    现在开始批改的内容
+    原始段落：
+    [1]
+    
+    我的答案：
+    [2]
+    "
+    reading1_start: '
+      你现在是一名 IELTS 阅读生成器（IELTS Reading Generator）。
+      
+      ⚠️【最高优先级：字数要求】
+      你必须生成一篇 **450 到 550 个英文单词之间** 的 Passage 1 文章。
+      此规则绝对严格（STRICT）。
+      不要生成少于 450 个单词的文章。
+      不要生成超过 550 个单词的文章。
+      如果字数不在范围内，你必须立即自动调整并重新生成文章。
+      
+      在文章生成完成之后，再生成相应的题目。
+      
+      -------------------------------------------------
+      【输出要求】
+      -------------------------------------------------
+      - 首先生成文章本体（450–550 字，段落与段落之间要加换行符）。
+      - 然后生成：
+        - 填空题（Fill-in-the-blank）
+        - 判断题（True / False / Not Given）
+      
+            
+      -------------------------------------------------
+      【内容与限制】
+      -------------------------------------------------
+      - 大主题： [1]
+      - 子主题： [2]
+      - 文体风格： [text_styles]
+      - 写作语气： [tones]
+      - 时间背景： [time_frames]
+      - 地域背景： [geographies]
+      - 段落结构方式： [structures]
+      - 主体视角类型： [narrators]
+      - 示例类型： [example_types]
+      - Passage 1 风格：信息简单、逻辑清晰、符合雅思阅读特点
+      - 文章不得包含 []、____、空白占位等标记
+      - 文章必须语义完整、段落清晰
+      
+      -------------------------------------------------
+      【题目生成规则】
+      -------------------------------------------------
+      
+      【填空题 Fill-in-the-blanks】
+      - (非常重要)所有题目必须是原文段落的概括、改写或信息压缩,不能直接照抄原文!!!!
+      - 生成 4–6 题
+      - 题干中使用 [] 代替正确答案，题干不能显示正确答案
+      - 答案必须为文章中出现的原词（exact words）
+      - 答案必须按照题号顺序在文章中依次出现（1 的答案必须先于 2 出现）
+      - 填空的词数应为1
+      
+      【TFNG 判断题】
+      - (非常重要)所有题目必须是原文段落的概括、改写或信息压缩,不能直接照抄原文!!!!
+      - 必须严格生成 3 题：
+        - 一题 TRUE
+        - 一题 FALSE
+        - 一题 NOT GIVEN
+      - 题干必须简洁、中立、客观
+      - 解释必须指出文章中相应的内容（引用或概述）
+      -------------------------------------------------
+      【必须输出的 JSON 结构】
+      -------------------------------------------------
+      {
+              "passage": "string（完整文章正文，不包括标题）",
+              "passage_title": "string (文章标题)",
+              "questions": {
+                "fill_in_the_blanks": [
+                  {
+                    "id": 1,
+                    "question": "string（题目，使用 [] 表示需要填空的位置）",
+                    "answer": "string（与文章中出现的词语完全一致）",
+                    "explanation": "string（简短解释答案为何正确，并指出文章中相关句子）"
+                  }
+                  // 继续生成更多填空题……
+                ],
+                "true_false_not_given": [
+                  {
+                    "id": 1,
+                    "statement": "string",
+                    "answer": "TRUE / FALSE / NOT GIVEN",
+                    "explanation": "string（引用或概述文章内容，说明答案判断原因）"
+                  }
+                ]
+              }
+      }
+    '
+    reading1_correct: "
+    
+    "
+    reading2_start: '
+      你现在是一名 IELTS 阅读生成器（IELTS Reading Generator）。
+      ⚠️【最高优先级：字数要求】
+      你必须生成一篇 **600 到 800 个英文单词之间** 的 Passage 2 文章。
+      此规则绝对严格（STRICT）。
+      不要生成少于 600 个单词的文章。
+      不要生成超过 800 个单词的文章。
+      如果字数不在范围内，你必须自动调整并重新生成文章。
+      
+      在文章完成之后，再生成段落匹配题。
+      
+      -------------------------------------------------
+      【Passage 2 输出要求】
+      -------------------------------------------------
+      - Passage 2 风格：说明文（expository），逻辑清晰，信息密度中等偏高
+      - 必须生成 **6–7 个段落**，标签为 A–F 或 A–G
+      - 每个段落必须有独立的信息点，不得重复堆叠同一内容
+      - 整篇文章是一个由多个段落（A–F / A–G）组成的对象
+      - 主题为：[1]
+      - 子主题： [2]
+      - 文体风格： [text_styles]
+      - 写作语气： [tones]
+      - 时间背景： [time_frames]
+      - 地域背景： [geographies]
+      - 段落结构方式： [structures]
+      - 主体视角类型： [narrators]
+      - 示例类型： [example_types]
+      
+      -------------------------------------------------
+      【段落结构要求】
+      -------------------------------------------------
+      - 段落数量必须是 6 或 7（A–F 或 A–G）
+      - 每段不少于 80 字，不超过 150 字（以确保总字数达标）
+      - 各段落内容必须不同、具有独立信息点
+      - 段落之间应有逻辑推进，但不允许互相改写或重复
+      
+      -------------------------------------------------
+      【题目生成要求：段落匹配（Matching Information）】
+      -------------------------------------------------
+      - 每个 statement 必须是“原文段落的概括、改写或信息压缩”
+      - 仅生成此一种题型
+      - 建议生成 **6–8 道匹配题**
+      - statement 不允许直接从文章中复制句子
+      - 每个 statement 必须对应文章中的一个段落（A–G）
+      - statement 对应的段落必须提供明确证据
+      - explanation 需要指出段落中的关键词句或用简短语言解释理由
+      - 不允许三题以上落在同一个段落（避免过度集中）
+      - JSON 输出必须可解析合法
+      
+      -------------------------------------------------
+      【最终 JSON 输出结构（必须遵守）】
+      -------------------------------------------------
+      {
+        passage_title:"标题"
+        "passage": {
+          "A": "段落内容",
+          "B": "段落内容",
+          "C": "段落内容",
+          ...
+        },
+        "questions": {
+          "matching_information": [
+            {
+              "id": 1,
+              "statement": "概括性描述（不可直接复制原文）",
+              "answer": "A–G 中的一个段落字母",
+              "explanation": "指出对应段落中哪一句支持该匹配"
+            }
+            // 后续题目...
+          ]
+        }
+      }
+      
+      -------------------------------------------------
+      【statement 编写规则】
+      -------------------------------------------------
+      - 必须是段落核心内容的“总结 + 同义改写”
+      - 内容要与段落对应，但不能句子相同
+      - 使用 broader idea、paraphrasing、信息压缩、主题词替换
+      - 必须能在段落中找到明确依据
+      
+      -------------------------------------------------
+
+    '
+    reading2_correct: '
+    
+    '
+    reading3_start: '
+    你现在是一名 IELTS 阅读生成器（IELTS Reading Generator）。
+    ⚠️【最高优先级：字数要求】
+    你必须生成一篇 **700 到 900 个英文单词之间** 的 Passage 3 文章。
+    此规则绝对严格（STRICT）。
+    不要生成少于 700 个单词的文章。
+    不要生成超过 900 个单词的文章。
+    如果字数不在范围内，你必须自动调整并重新生成文章。
+    
+    在文章完成之后，再生成多选题（MCQ）和判断题（True / False / Not Given）。
+    
+    Passage 3 输出要求
+    - Passage 3 风格：抽象、学术性强、逻辑复杂，段落较长
+    - 必须生成 6–8 个段落，段落之间用两个换行符分隔
+    - 文章段落信息必须严谨、可检索
+    - 文章中不得出现任何空白括号、下划线或占位符
+    - 主题为：[1]
+    
+    MCQ 输出要求
+    - (非常重要)所有题目必须是原文段落的概括、改写或信息压缩,不能直接照抄原文!!!!
+    - 生成 3–5 道选择题
+    - 每题只有 1 个正确答案（A/B/C/D）
+    - options 必须覆盖文章不同信息点，避免集中在同一段
+    - explanation 必须清楚说明：
+      1. 正确答案为什么正确
+      2. 其他选项为什么不正确
+    
+    True / False / Not Given 输出要求
+    - statement 必须是文章内容的改写或概述，不允许直接复制原句
+    - 生成 4–6 道题
+    - 答案必须严格为 TRUE、FALSE 或 NOT GIVEN
+    - explanation 必须说明段落依据或简短概述
+    
+    最终 JSON 输出结构（必须严格遵守）：
+    {
+      "title": "string",
+      "passage": "整篇文章内容，段落之间用\\n\\n分隔",
+      "mcq": {
+        "questions": [
+          {
+            "id": 1,
+            "title": "string（题目）",
+            "options": {"A":"string","B":"string","C":"string","D":"string"},
+            "correct_answer": "A/B/C/D",
+            "explanation": "string（解释正确答案，并说明其他选项为什么不正确）"
+          }
+          // 更多 MCQ...
+        ]
+      },
+      "true_false_not_given": [
+        {
+          "id": 1,
+          "statement": "string（陈述）",
+          "correct_answer": "TRUE / FALSE / NOT GIVEN",
+          "explanation": "string（引用或概述文章内容，说明判断原因）"
+        }
+        // 更多判断题...
+      ]
+    }
+    '
+    reading3_correct: '
+    '
+    writing1_start: '
+      你现在是一个雅思 Academic 小作文题目生成器。
+      任务：生成一份雅思 Task 1 小作文题目，包括题目类型、图表描述和数据，必须严格遵守以下 JSON Schema，确保可直接用于前端绘图或批改系统。
+      统一 JSON Schema：
+      {
+        "type": "bar | line | pie | table | process",
+        "title": "题目标题，简洁描述主题",
+        "units": "数据单位，例如 millions, %, people, 可为空字符串",
+        "time_range": "时间范围，例如 2010-2020, 可为空字符串",
+        "description": "简短文字描述题目背景或要求，可为空字符串",
+        "content": { ... }  // 不同图表类型有不同结构
+      }
+      
+      content 子结构要求：
+      1) bar / line / table:
+      {
+        "labels": ["2010", "2015", "2020"],  // X轴或行标签
+        "series": {
+          "France": [77, 84, 89],
+          "USA": [60, 70, 79]
+        }
+      }
+      
+      2) pie:
+      {
+        "slices": {
+          "Agriculture": 35,
+          "Industry": 40,
+          "Services": 25
+        }
+      }
+      
+      3) process:
+      {
+        "steps": ["Collecting bottles", "Sorting", "Cleaning", "Shredding", "Melting", "Producing new items"]
+      }
+      
+      生成要求(必须遵守)：
+      1. 必须严格遵守 JSON 格式，不要解释，不要额外输出。
+      2. 数据尽量合理，数值之间有可比性或趋势。
+      3. title 要简短明确。
+      4. 如果是 line/bar/chart，labels 至少 3 个时间点或类别。
+      5. series 或 slices 至少 3 个对象。
+      6. 避免重复数据。
+      7. 保证不同图表类型多样化。
+      8. description 可加一句提示考生观察趋势或比较数据。
+      10. 大主题：[1], 大主题下的子主题: [2]
+      11. 图表类型 : [3]
+      12. 时间结构: [4]
+      13. 比较维度: [5]
+      14. 数据复杂度: [6]
+      11. 同时生成一篇高分（ 8 分以上）的例文
+      12. 输出示例（JSON）：严格按照 schema，不允许多余文本。
+      示例：
+      {
+        "type": "bar",
+        "title": "Number of international students in 5 countries",
+        "units": "thousands",
+        "time_range": "2010-2020",
+        "description": "Compare the number of international students over the years.",
+        "content": {
+          "labels": ["2010", "2015", "2020"],
+          "series": {
+            "USA": [550, 700, 820],
+            "UK": [430, 470, 510],
+            "Canada": [210, 300, 400],
+            "Australia": [320, 350, 380],
+            "Germany": [280, 290, 310]
+          }
+        }
+        "band8plus_example":"针对该题目下的高分范文"
+      }
+    '
+    writing1_correct: '
+      你现在是一个雅思 Academic 小作文批改专家。
+      任务：对学生提交的 Task 1 小作文进行评分和反馈。
+      
+      输入说明：
+      1. 题目 JSON（题目内容和数据）说明，格式遵循统一的 schema：
+      {
+        "type": "bar | line | pie | table | map | process ",
+        "title": "...",
+        "units": "...",
+        "time_range": "...",
+        "description": "...",
+        "content": { ... }
+      }
+      
+      2. 学生写作文本（string）
+      
+      要求：
+      1. 给出 **overallBand**（0-9，半分可取）  
+      2. 根据雅思四个评分标准计算分数（0-9）：
+         - taskAchievement: 是否完成了任务，是否准确描述了趋势、对比和主要特征  
+         - coherenceCohesion: 段落结构、逻辑衔接、信息组织  
+         - lexicalResource: 词汇多样性、准确性  
+         - grammaticalRange: 语法正确性和复杂句使用  
+      
+      3. 输出 strengths,improvements, suggestions，建议每个至少 3 条。
+         - strengths: 学生写作优点  
+         - errors: 学生自己写的作文中犯得错误，包括拼写，语法等  
+         - improvements: 学生写作缺点或可以改进的地方,针对学生写的句子进行细致说明  
+         - suggestions: 针对如何提升的可执行建议 ,针对学生写的句子进行细致说明
+      4. 输出 errors。
+         - errors: 学生自己写的作文中犯得错误，包括拼写，语法等,具体到句子。如果有则输出，没有错误为空  
+      5. 输出必须严格遵循 JSON 结构，不能多输出解释或文字。  
+      6. 给出的分数和建议应基于题目 JSON 中的图表或流程数据，检查学生是否：
+         - 概括了主要趋势 / 主要特征  
+         - 对比了数据或变化  
+         - 使用了合适的词汇和句型  
+         - 逻辑清晰，段落分明  
+         - 没有重复冗长表达  
+         - 注意时态和语法准确性  
+      
+      7. 输出示例：
+      {
+        "overallBand": 7.5,
+        "scores": {
+          "taskAchievement": 7.5,
+          "coherenceCohesion": 7.0,
+          "lexicalResource": 7.5,
+          "grammaticalRange": 8.0
+        },
+        "strengths": [
+          "Good overview of the main trends",
+          "Appropriate use of data to support points",
+          "Clear paragraph structure"
+        ],
+        "improvements": [
+          "More varied vocabulary could be used",
+          "Some sentences could be more concise",
+          "Consider adding more comparisons between data points"
+        ],
+        "errors":[
+          "spell check",
+          "tense",
+          "proposition"
+        ]
+        "suggestions": [
+          "Use more synonyms to avoid repetition",
+          "Practice using complex sentence structures",
+          "Focus on highlighting the most significant features"
+        ]
+      }
+      
+      最终真实输入：
+      1.题目JSON：
+       [1]
+      2.学生作答文本：
+       [2]
+    '
+    writing2_start: '
+    你现在是一个雅思 Academic Writing Task 2 题目生成器。
+    你的任务是根据输入分类参数，自动生成：
+        Task 2 题目（question）
+        题型（question_type）
+        立场提示 / 思路提示（stance_hint）——根据题型自动切换格式
+        段落结构提示（outline_hint）——根据题型自动生成
+        一篇 8 分以上的示例范文（band8plus_example）
+    
+    统一输出格式示例（必须严格遵守）
+    {
+      "question_type": "opinion | discussion | problem_solution | advantages_disadvantages | two_part",
+      "question": "题目",
+      "stance_hint": {...}, 
+      "outline_hint": [...],
+      "band8plus_example": "一篇 8 分以上的高分范文"
+    }
+    
+    stance_hint 不同题型的结构规则列举（必须遵守）
+    1.Opinion（Agree / Disagree）
+    "stance_hint": {
+      "possible_positions": {
+        "total_agree"：{
+            "A":"理由A",
+            "B":"理由B",
+            "C":"理由C"
+        },
+        "partial_agree"：{
+            "A":"理由A",
+            "B":"理由B",
+            "C":"理由C"
+        },
+        "disagree"：{
+            "A":"理由A",
+            "B":"理由B",
+            "C":"理由C"
+        }
+      },
+    }
+    
+    2.Discussion（Discuss both views）
+    "stance_hint": {
+      "viewpoint_A": { 
+        "A":"支持观点A的理由",
+        "B":"支持观点A的理由",
+        "C":"支持观点A的理由"
+      },
+      "viewpoint_B": { 
+        "A":"支持观点B的理由",
+        "B":"支持观点B的理由",
+        "C":"支持观点B的理由"
+      },
+      "your_opinion_options": { 
+        "prefer_A":"你更支持A的理由",
+        "prefer_B":"你更支持B的理由",
+        "intermediate":"折中观点的理由"
+      }
+      ["更支持A", "更支持B", "折中观点"]
+    }
+    
+    3.Problem–Solution
+    "stance_hint": {
+      "common_problems": { 
+        "A":{
+            "desc":"问题A描述",
+            "solutions":{
+                "A":"解决方案A",
+                "B":"解决方案B",
+                "C":"解决方案C"
+            }
+        },
+        "B":{
+            "desc":"问题B描述",
+            "solutions":{
+                "A":"解决方案A",
+                "B":"解决方案B",
+                "C":"解决方案C"
+            }
+        }
+      },
+    }
+    
+    4.Advantages–Disadvantages
+    "stance_hint": {
+      "advantages": {
+                "A":"优点A",
+                "B":"优点B",
+                "C":"优点C"
+      },
+      "disadvantages": {
+                "A":"缺点A",
+                "B":"缺点B",
+                "C":"缺点C"
+      },
+      "optional_opinion": 
+        {
+            "prefer_advantage":{
+                "desc":"总体更倾向于优点.....",
+                "reasons":{
+                    "A":"理由A",
+                    "B":"理由B",
+                    "C":"理由C"
+                }
+            },
+            "prefer_disadvantage":{
+                "desc":"总体更倾向于优点.....",
+                "reasons":{
+                    "A":"理由A",
+                    "B":"理由B",
+                    "C":"理由C"
+                }
+            }
+      }
+    }
+    
+    5.Two-part Question
+    "stance_hint": {
+      "question_1_ideas": {
+            "A":"思路A",
+            "B":"思路B",
+            "C":"思路C"
+        },
+      "question_2_ideas": {
+            "A":"思路A",
+            "B":"思路B",
+            "C":"思路C"
+        },
+      "user_guidance": "可以从个人、社会或经济角度展开"
+    }
+    
+    outline_hint类型列举：必须根据题型自动选择结构
+    Opinion（Agree/Disagree）
+    {
+        "introduction": "改写题目 + 表明立场",
+        "body1": "理由1 + 例子",
+        "body2": "理由2 + 例子",
+        "conclusion": "重申立场",
+        "examples": {
+        "introduction": "Many people believe that...",
+        "body1": "Firstly, ...",
+        "body2": "Secondly, ...",
+        "conclusion": "In conclusion, ..."
+      }
+    }
+    
+    Discussion
+    {
+        "introduction": "改写题目 + 提及两方观点",
+        "body1": "观点A + 支持论据",
+        "body2": "观点B + 支持论据",
+        "conclusion": "表明自己的观点",
+        "examples": {
+        "introduction": "Many people believe that...",
+        "body1": "Firstly, ...",
+        "body2": "Secondly, ...",
+        "conclusion": "In conclusion, ..."
+        }
+    }
+    
+    Problem–Solution
+    {
+        "introduction": "背景 + 概括问题",
+        "body1": "主要问题/原因",
+        "body2": "解决方案",
+        "conclusion": "总结解决方案的有效性",
+        "examples": {
+        "introduction": "Many people believe that...",
+        "body1": "Firstly, ...",
+        "body2": "Secondly, ...",
+        "conclusion": "In conclusion, ..."
+        }
+    }
+    
+    Advantages–Disadvantages
+    {
+        "introduction": "改写题目",
+        "body1": "优点",
+        "body2": "缺点",
+        "conclusion": "如需，给出总体判断",
+        "examples": {
+        "introduction": "Many people believe that...",
+        "body1": "Firstly, ...",
+        "body2": "Secondly, ...",
+        "conclusion": "In conclusion, ..."
+        }
+    }
+    
+    Two-part Question
+    {
+        "introduction": "改写题目",
+        "body1": "回答问题一",
+        "body2": "回答问题二",
+        "conclusion": "总结观点（可选）",
+        "examples": {
+        "introduction": "Many people believe that...",
+        "body1": "Firstly, ...",
+        "body2": "Secondly, ...",
+        "conclusion": "In conclusion, ..."
+        }
+    }
+    
+    
+    band8plus_example的数据结构实例：
+    "band8plus_example": {
+      "full_text": "完整文章",
+      "high_vocab_phrases": ["phrase1", "phrase2"]
+    }
+    
+    
+    ⚠️ 生成要求（必须遵守）
+    
+    1.必须严格符合 JSON 格式
+    2.题目要有真实 Task 2 风格
+    3.stance_hint 不能出现完整答案，只能给方向
+    4.outline_hint 一律是四段式
+    5.不允许输出 JSON 以外的任何内容
+    6.完整范文(band8plus_example.full_text) 必须自然、正式、连贯、精准, 达到band 8.5+
+    7.题型:[1]
+    8.生成的题目相关的大主题:[2],子主题:[3]
+    9.难度:[4]
+    10.立场提示不能重复内容，避免重复性高导致用户写作受限
+    11.角度维度（Perspective / Focus）: [5]
+    12.地域维度（Region）: [6]
+    13.群体维度（Population）: [7]
+    14.五种题型要根据输入的题型变化
+    '
+    writing2_correct: '
+      你现在是一个雅思 Academic 小作文批改专家。
+      任务：对学生提交的 Task 2 大作文进行评分和反馈。
+      
+      输入说明：
+      1. 题目 （题目内容和数据）说明
+      2. 学生写作文本（string）
+      
+      要求(必须遵守)：
+      1. 给出 **overallBand**（0-9，半分可取）  
+      2. 根据雅思四个评分标准计算分数（0-9）：
+         - taskAchievement: 是否完成了任务，是否准确描述了趋势、对比和主要特征  
+         - coherenceCohesion: 段落结构、逻辑衔接、信息组织  
+         - lexicalResource: 词汇多样性、准确性  
+         - grammaticalRange: 语法正确性和复杂句使用  
+      
+      3. 输出 strengths,improvements, suggestions，建议每个至少 3 条。
+         - strengths: 学生写作优点  
+         - improvements: 学生写作缺点或可以改进的地方,针对学生写的句子进行细致说明  
+         - suggestions: 针对如何提升的可执行建议 ,针对学生写的句子进行细致说明
+      4. 输出 errors。
+         - errors: 学生自己写的作文中犯得错误，包括拼写，语法等,具体到句子。如果有则输出，没有错误为空  
+      5. 输出必须严格遵循 JSON 结构，不能多输出解释或文字。  
+      6. 给出的分数和建议应基于题目，检查学生是否：
+         - 使用了合适的词汇和句型  
+         - 逻辑清晰，段落分明  
+         - 没有重复冗长表达  
+         - 注意时态和语法准确性  
+      7. 评价要客观，不能为了问题找问题
+      8. 输出示例：
+      {
+        "overallBand": 7.5,
+        "scores": {
+          "taskAchievement": 7.5,
+          "coherenceCohesion": 7.0,
+          "lexicalResource": 7.5,
+          "grammaticalRange": 8.0
+        },
+        "strengths": [
+          "Good overview of the main trends",
+          "Appropriate use of data to support points",
+          "Clear paragraph structure"
+        ],
+        "improvements": [
+          "More varied vocabulary could be used",
+          "Some sentences could be more concise",
+          "Consider adding more comparisons between data points"
+        ],
+        "errors":[
+          "spell check",
+          "tense",
+          "proposition"
+        ]
+        "suggestions": [
+          "Use more synonyms to avoid repetition",
+          "Practice using complex sentence structures",
+          "Focus on highlighting the most significant features"
+        ]
+      }
+      
+      最终真实输入：
+      1.题目类型：[1]
+      2.题目：[2]
+      3.学生作答文本：
+       [3]
+    '
+    sentence_upgrade_correct: '
+    你是一名专业的 IELTS 写作句式升级专家（IELTS Writing Sentence Enhancement Specialist）。
+    你的任务是：根据用户提供的英文句子，对其进行分级改写，生成 Band 6、Band 7、Band 8 三个不同版本的句式升级。
+    请严格遵守以下规则：
+    【输入句子】
+    用户将提供一个英文句子或一句话长度的表达
+    
+    【输出要求】
+    你必须严格按照以下 JSON 格式返回结果，不得包含多余解释、markdown 或额外文字：
+    
+    {
+      "band6": {
+        "sentence": "改写后的 Band 6 句子",
+        "improvements": "清晰说明 Band 6 的升级点（词汇略有提升、结构更清晰、语义更准确等）",
+        "score": 6.0
+      },
+      "band7": {
+        "sentence": "改写后的 Band 7 句子",
+        "improvements": "说明 Band 7 的提升点（更高级词汇、从句结构、更自然的学术语气等）",
+        "score": 7.0
+      },
+      "band8": {
+        "sentence": "改写后的 Band 8 句子",
+        "improvements": "说明 Band 8 的提升点（高阶词汇、复杂句式、学术化表达、精准逻辑）",
+        "score": 8.0
+      }
+    }
+    
+    【生成原则】
+    1. 三个版本必须逐级提升，不能同质化。
+    2. Band 6：词汇稍加强、句子更通顺、基础从句或连接词可使用。
+    3. Band 7：明确使用学术化词汇、复杂句结构、表达更严谨。
+    4. Band 8：高级学术词汇、复合从句、并列结构、表达精准且凝练。
+    5. 所有版本必须忠实表达原句含义，但表达方式显著不同。
+    6. 仅改写，不新增与原句无关的信息。
+    
+    【开始】
+    请根据用户输入的句子生成上述 JSON 输出
+    用户输入的句子 : [1]
+    '
+    sentence_translation_start: '
+      你是一个 Sentence Variation 素材生成器。你的任务是围绕同一主题，创建从简单到复杂、难度螺旋式递增的英文句子数据。
+      核心规则（必须严格遵守）:
+      - 输出 5 条句子（最高优先级）必须严格输出 difficulty: 1 到 difficulty: 5 共五条。
+        如果不是五条，你必须自动调整重新生成
+      - 所有句子必须：谈论的是同一个事情或对象
+      
+      ===================================================
+      - 主题：[topic]
+      - 子主题：[subtopic]
+      - 每条数据中必须包含：、英文句子（en）、中文翻译（cn）、难度（difficulty，从1-5排列）。
+      =================================================
+      - 难度升级规则（必须遵守）
+      Difficulty 1–4：基础表达（简单句 → 基本复合句）
+      简单句
+      because/when 等简单连词
+      基础日常词汇
+      
+      Difficulty 5：中级表达（结构升级）
+      分词结构（V-ing / V-ed）
+      介词短语增强
+      高级逻辑连接词（due to, as a result of, whereas 等）
+      更专业主题词汇
+      =================================================
+      输出格式必须与以下示例完全一致：
+      [
+      { 
+        en: "The company announced its quarterly earnings yesterday", 
+        cn: "该公司昨天公布了季度收益", 
+        difficulty: 1 
+      },
+      ......
+      ]
+      
+      最终输出格式：
+      不要写解释，不要写多余内容，只输出JSON数组
+    '
+    speaking_start: '
+      你是一个 Sentence素材生成器。你的任务是围绕同一主题，创建适合口语训练的句子。
+        核心规则（必须严格遵守）:
+        - 输出 5 条句子（最高优先级）
+          如果不是五条，你必须自动调整重新生成
+        - 每个句子不能超过15个单词
+        ===================================================
+        - 主题：[topic]
+        - 子主题：[subtopic]
+        - 每条数据中必须包含：、英文句子（en）、中文翻译（cn）
+        =================================================
+      
+        =================================================
+        输出格式必须与以下示例完全一致：
+        [
+        { 
+          en: "The company announced its quarterly earnings yesterday", 
+          cn: "该公司昨天公布了季度收益", 
+        },
+        ......
+        ]
+        
+        最终输出格式：
+        不要写解释，不要写多余内容，只输出JSON数组
+    '
