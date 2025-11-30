@@ -9,6 +9,9 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from starlette.responses import FileResponse
 from app.api.v1.user_config_api import router as config_router
+from contextlib import asynccontextmanager
+import webbrowser
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger(__name__)
 def base_path() -> Path:
@@ -26,7 +29,21 @@ FRONTEND_DIR = BASE_DIR / "frontend" / "out"
 STATIC_DIR = BASE_DIR / "app" / "static"
 
 
-app = FastAPI(docs_url=None,redoc_url=None)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not app.state:
+        port = app.state.port  # ✅ 关键点
+        print("\nEnglish Learning Tool Started Successfully!")
+        print(f"Open in browser: http://127.0.0.1:{port}\n")
+        webbrowser.open(f"http://127.0.0.1:{port}")
+
+    yield
+
+    print("English Learning Tool Is Shutting Down...")
+
+
+
+app = FastAPI(lifespan=lifespan,docs_url=None,redoc_url=None)
 
 # 1. 挂载静态资源
 app.mount(
@@ -39,6 +56,21 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 #路由设置
 app.include_router(task_router, prefix="/api/v1", tags=["task"])
 app.include_router(config_router, prefix="/api/v1",tags=["config"])
+
+# 跨域配置
+origins = [
+    "http://localhost:3000",  # 前端地址
+    "http://127.0.0.1:3000",  # 本地开发时可能用到
+    "*",  # 如果想允许所有来源，可以用 "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # 允许跨域的域名
+    allow_credentials=True,
+    allow_methods=["*"],    # 允许所有方法 GET, POST, PUT, DELETE...
+    allow_headers=["*"],    # 允许所有请求头
+)
 
 # 2. 处理前端路由（非常重要）
 @app.get("/{full_path:path}")
@@ -63,14 +95,32 @@ def port_in_use(port: int) -> bool:
 # -------------------------
 # 程序入口
 # -------------------------
-if __name__ == "__main__":
-    PORT = 8080
+def print_banner(port: int):
+    print("=" * 52)
+    print(" ENGLISH LEARNING TOOL STARTING ")
+    print("=" * 52)
+    print(f" • Port        : {port}")
+    print(" • Mode        : Production (exe)")
+    print("=" * 52)
 
+def find_available_port(start_port: int, max_tries: int = 20) -> int:
+    port = start_port
+    for _ in range(max_tries):
+        if not port_in_use(port):
+            return port
+        port += 1
+    raise RuntimeError("No available port found")
+
+if __name__ == "__main__":
+    START_PORT = 8080
+
+    PORT = find_available_port(START_PORT)
+    app.state.port = PORT  # ✅ 这一句非常关键！！
+    print_banner(PORT)
     if port_in_use(PORT):
         print(f"[INFO] Port {PORT} already in use, exit")
         sys.exit(0)
 
-    print(f"started....")
     uvicorn.run(
         app,
         host="127.0.0.1",      # ✅ 非常重要
@@ -80,6 +130,7 @@ if __name__ == "__main__":
         reload=False
     )
 
+
 # uvicorn app.main:app --reload
 # pip freeze > requirements.txt
-#pyinstaller --onefile --add-data "app/static;app/static" --add-data "frontend/out;frontend/out" --add-data "app/config/settings.yml;config" --name ai_server --hidden-import=uvicorn.protocols.http --hidden-import=uvicorn.protocols.websockets --hidden-import=uvicorn.lifespan.on app/main.py
+#pyinstaller --onefile  --icon=D:/project/EnglishDesktopExe/py-Enlgish-support-backend/english.ico --add-data "app/static;app/static" --add-data "frontend/out;frontend/out" --add-data "app/config/settings.yml;config" --name English_Learning_Tool --hidden-import=uvicorn.protocols.http --hidden-import=uvicorn.protocols.websockets --hidden-import=uvicorn.lifespan.on app/main.py
