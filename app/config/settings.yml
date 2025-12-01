@@ -9,28 +9,1277 @@ llm:
   retry_delay: 5
 prompt:
   en:
-    subtopics_start: ''
-    synonym_start: ""
-    synonym_correct: ""
-    sentence_start: ""
-    sentence_correct: ""
-    paragraph_start: ""
-    paragraph_correct: ""
-    summary_start: ""
-    summary_correct: ""
-    reading1_start: ""
-    reading1_correct: ""
-    reading2_start: ""
+    subtopics_start: '
+    Based on the IELTS main topic I provide: [1], generate 10–20 subtopics under this main topic.
+    Please output the following JSON format (strictly compliant with JSON specifications, no extra text, no comments, no markdown):
+    {
+      "topic": "education",
+      "subtopics": [
+      "early childhood development",
+      "adult education",
+      "stem enrollment",
+      "teacher qualification levels",
+      "home schooling adoption",
+      "online learning usage"
+      ]
+    }
+    '
+    synonym_start: '
+    You are now an IELTS Writing Training Article Generator (IELTS Writing Synonym Training Generator).
+    ⚠️【Highest Priority: Word Count Requirement】
+    You must generate an English article with 150 to 300 English words.
+    This rule is absolutely strict (STRICT).
+    Do not generate fewer than 150 words.
+    Do not generate more than 300 words.
+    If the word count is outside this range, you must automatically adjust and regenerate the article.
+    After the article is completed, then generate other content.
+    
+    Article Content Requirements
+    
+    (Very important) Reserve 5–8 “synonym training words” in the article, replaced with markers [A], [B], [C]… (do not use any other bracket formats)
+    
+    Main topic: [1]
+    
+    Subtopic: [2]
+    
+    Marked words must:
+    
+    Be distributed in different positions throughout the article
+    
+    Cover at least three parts of speech: noun, verb, adjective, adverb
+    
+    Be highly academic and commonly used in IELTS
+    
+    Each marked word may appear only once in the article
+    
+    JSON Output Requirements
+    
+    The article field may contain \n line breaks
+    
+    The keys in markers must correspond exactly to the markers in the article
+    
+    Number of markers: 5–8
+    
+    All words must be lowercase English letters, without punctuation
+    
+    Final JSON Structure Example
+    {
+    "passage_title": "article title",
+    "article": "article body each marked word uses [A] [B] etc for example education plays a crucial [A] in shaping individuals [B] ...",
+      "markers": {
+      "A": "corresponding original english word",
+      "B": "corresponding original english word",
+      "C": "corresponding original english word"
+      // at least 5 and at most 8
+      }
+    }
+    '
+    synonym_correct: '
+      Please act as a professional IELTS writing/vocabulary coach and help me review a synonym replacement exercise.
+      Below, I will provide:
+          The original passage (with marked words in the format (A)xxx, (B)xxx, (C)xxx, …)
+          My own replacement answers
+      
+      Your task objectives are:
+          - Determine whether my replacement for each marked word is correct
+          - Generate detailed feedback for each marked word
+          - Generate detailed feedback for each marked word
+      
+      When generating each detail, you must strictly follow the requirements below:
+          Each detail must contain no fewer than 4 complete evaluation points and clearly cover the following dimensions:
+          Semantic equivalence: Is the replacement fully equivalent in meaning to the original word in the given context? Is there any semantic narrowing, broadening, or shift?
+          Register and style: Does it match the original level of formality and academic/argumentative tone?
+          Collocation and naturalness: Does it align with common English collocations? Is the usage idiomatic and natural, or does it reflect a “Chinese-style advanced word” issue?
+          Impact on IELTS writing score: In a C1–C2 IELTS context, does this replacement add value, make no real improvement, or constitute a potential penalty?
+      
+          If flag = false, the detail must additionally include:
+          – A clear identification of the specific error type (semantic deviation / inappropriate register / collocation error / logical mismatch)
+          – 1–3 more appropriate replacement words or expressions, with a brief explanation of their usage differences
+      
+      Language requirements:
+          Use a professional IELTS writing/vocabulary teaching perspective
+          Explain why something is good or bad, not just “good / bad”
+          Avoid vague judgments (e.g., “not very natural”, “not very suitable”) — reasons must be explicit and specific
+      
+      Output format requirements (must strictly comply):
+          You must output using the following JSON structure, and it must be valid JSON (no comments, no extra text):
+      
+      {
+        "details": {
+         "A": {
+            "flag": true,
+            "detail": "explanation content"
+          },
+          "B": {
+            "flag": false,
+            "detail": "explanation content"
+          }
+        }
+      }
+      
+      
+      Notes:
+          flag: whether the replacement is correct (true / false)
+          detail:
+          If correct: explain why it is correct and what makes it idiomatic, natural, or advanced
+          If incorrect: explain the reason for the error, what the correct word should be, why the replacement is inappropriate, and what more advanced or natural alternatives could be used
+      
+      Only output JSON. Do not output any extra explanation or natural language text.
+      
+      Now begin reviewing the following content.
+      
+      Original passage:
+      [1]
+      
+      My answer:
+      [2]
+    '
+    sentence_start: '
+      Please generate high-quality IELTS example sentences for sentence imitation practice according to the following requirements.
+      Main topic: [1], subtopic: [2]
+      
+      You must strictly follow all requirements without omitting any.
+      
+      Content generation requirements:
+          - Generate one English sentence under 50 words that serves as the target sentence, strictly in the style of IELTS Writing Task 2:
+              Formal
+              Academic tone
+              Natural and idiomatic wording
+              Non-template-based, non-mechanical structures
+              Sufficient structural complexity (e.g., insertions, clauses, defining/non-defining relative clauses, etc.)
+      
+          - Then generate three example sentences that share the same sentence structure as the target sentence but differ in semantic context
+      
+      Output format requirements (strictly comply):
+      You must output a strictly JSON-compliant structure, with no additional text, comments, or markdown:
+      
+      {
+        "sentence": "original sentence",
+        "examples": [
+          "example sentence with the same structure 1",
+          "example sentence with the same structure 2",
+          "example sentence with the same structure 3"
+        ]
+      }
+    '
+    sentence_correct: '
+    Please act as a professional IELTS writing/vocabulary coach and help me review the sentences I have imitated.
+    Your task objectives (very important, must strictly follow):
+        - The detail field must provide diagnostic and instructional feedback, with appropriate line breaks for better readability
+    Output format requirements (must strictly comply):
+    
+    {
+      "details": {
+        "A": {
+          "flag": true,
+          "detail": "explanation content, which must cover the following dimensions:
+                     1. Semantic accuracy: whether it remains consistent with the original sentence
+                     2. Grammatical structure: whether the sentence structure is correct
+                     3. Collocation and idiomatic expression: whether word choice and phrasing are natural and advanced
+                     4. IELTS writing value: whether the vocabulary and sentence structure enhance the IELTS score"
+        }
+      }
+    }
+    Notes:
+        - Output JSON only. Do not include any additional explanation or natural language text
+        - Markers A, B, C… in the user’s answers must correspond to the keys in details
+    Now begin reviewing the following content.
+    Original target sentence:
+    [1]
+    My answer:
+    [2]
+    '
+    paragraph_start: "
+    Please generate a high-quality IELTS thematic paragraph for paragraph imitation practice according to the requirements below.
+    (Most important) Content generation requirements:
+    - Generate one English paragraph under 100 words, strictly in the style of IELTS Writing Task 2:
+        - Formal
+        - Academic tone
+        - Natural and idiomatic wording
+        - Non-template-based, non-mechanical reuse of structures
+        - The content must demonstrate a certain level of complexity (e.g., insertions, clauses, defining relative clauses, etc.)
+    - Main topic: [1], subtopic: [2].
+    - Simultaneously generate 2 new paragraphs that share the same structure as the original paragraph but differ in meaning, as examples (examples)
+      
+      JSON output format requirements (must strictly comply):
+      
+      You must output a structure that strictly conforms to the JSON specification, and must not contain any extra text, comments, or markdown formatting:
+      
+      {
+        'paragraph': 'It is difficult to imagine more humble origins than those of the genius now 
+          cooking at Gusteau's, who is, in this critic's opinion, nothing less than the finest chef in France.'
+        'examples':[
+          'A new example paragraph with the same structure as the original paragraph',
+          'A new example paragraph with the same structure as the original paragraph'
+        ]
+      }
+    "
+    paragraph_correct: "
+      Please act as a professional IELTS writing/vocabulary coach and help me review the paragraph I have imitated.
+    Below, I will provide:
+        The original paragraph
+        My own imitated version
+
+    Your task objectives are:
+        - The detail field must provide diagnostic and instructional feedback, with appropriate line breaks to improve readability
+    
+    Output format requirements (must strictly comply):
+    
+    {
+      'detail': 'explanation content, which must cover the following dimensions:
+                 1. Semantic accuracy: whether the user’s paragraph preserves the original meaning or shows any deviation
+                 2. Grammatical structure: correctness of sentence patterns, tense, voice, and clause usage
+                 3. Collocation and idiomatic expression: whether vocabulary and phrases are natural and advanced
+                 4. Logical coherence: whether the internal and inter-sentence logic of the paragraph is smooth
+                 5. IELTS writing value: whether the vocabulary and sentence structures meet the C1–C2 level and contribute to score improvement
+                 '
+    }
+    
+    
+    Notes:
+        - Output JSON only. Do not include any additional explanation or natural language text
+    
+    Now begin reviewing the following content.
+    
+    Original paragraph:
+    [1]
+    
+    My answer:
+    [2]
+    "
+    summary_start: "
+      Please generate a high-quality IELTS thematic essay for summary practice according to the following requirements.
+      Main topic: [1], subtopic: [2].
+      
+      ⚠️ [Highest Priority: Word Count Requirement]
+      You must generate an English essay of between 200 and 350 words.
+      This rule is absolutely strict (STRICT).
+      Do not generate fewer than 200 words.
+      Do not generate more than 350 words.
+      If the word count falls outside this range, you must automatically adjust and regenerate the essay.
+      
+      Content generation requirements:
+          - Formal
+          - Academic tone
+          - Natural and idiomatic wording
+          - Non-template-based, non-mechanical reuse of structures
+          - The content must demonstrate a certain level of complexity (e.g., insertions, clauses, defining relative clauses, etc.)
+          - Output a high-scoring sample summary
+      
+      Output format requirements (must strictly comply):
+      
+      You must output a structure that strictly conforms to the JSON specification, and must not contain any extra text, comments, or markdown formatting:
+      
+      {
+        'passage_title': 'title'
+        'article': 'It is difficult to imagine more humble origins than those of the genius now 
+          cooking at Gusteau's, who is, in this critic's opinion, nothing less than the finest chef in France.'
+        'examples':[
+          'high-scoring sample summary'
+        ]
+      }
+    "
+    summary_correct: "
+    Please act as a professional IELTS writing/vocabulary coach and help me review my summary of an article.
+    Below, I will provide:
+        The original article
+        My own written summary
+
+    Your task objectives are:
+        - The detail field must provide diagnostic and instructional feedback, with appropriate line breaks to improve readability
+    
+    Output format requirements (must strictly comply):
+    
+    {
+      'detail': 'explanation content, which must cover the following dimensions:
+               1. Semantic accuracy: whether the user’s paragraph preserves the original meaning or shows any deviation
+               2. Grammatical structure: correctness of sentence patterns, tense, voice, and clause usage
+               3. Collocation and idiomatic expression: whether vocabulary and phrases are natural and advanced
+               4. Logical coherence: whether internal and inter-sentence logic is smooth
+               5. IELTS writing value: whether the vocabulary and sentence structures meet the C1–C2 level and contribute to score improvement',
+    }
+    
+    
+    Notes:
+        Only output JSON. Do not output any additional explanation or natural language text.
+    
+    Now begin reviewing the following content.
+    
+    Original paragraph:
+    [1]
+    
+    My answer:
+    [2]
+    "
+    reading1_start: '
+      You are now an IELTS Reading Generator.
+      ⚠️ [Highest Priority: Word Count Requirement]
+      You must generate a Passage 1 article between 450 and 550 English words.
+      This rule is absolutely strict (STRICT).
+      Do not generate fewer than 450 words.
+      Do not generate more than 550 words.
+      If the word count is outside this range, you must immediately adjust and regenerate the article.
+      
+      After the article is generated, you must then generate the corresponding questions.
+      
+      [Output Requirements]
+      
+      First, generate the passage body (450–550 words, with line breaks between paragraphs).
+      
+      Then generate:
+          - Fill-in-the-blank questions
+          - True / False / Not Given questions
+      
+      [Content and Constraints]
+      
+      Main topic: [1]
+      
+      Subtopic: [2]
+      
+      Text style: [text_styles]
+      
+      Writing tone: [tones]
+      
+      Time frame: [time_frames]
+      
+      Geographical background: [geographies]
+      
+      Paragraph structure type: [structures]
+      
+      Narrator perspective type: [narrators]
+      
+      Example type: [example_types]
+      
+      Passage 1 style: simple information, clear logic, aligned with IELTS reading characteristics
+      
+      The passage must not contain [], ____ , or blank placeholders
+      
+      The passage must be semantically complete with clear paragraphs
+      
+      [Question Generation Rules]
+      
+      [Fill-in-the-Blanks]
+      
+      (Very important) All questions must be a summary, paraphrase, or compressed version of the original passage and must NOT be copied directly from the text!!!!
+      
+      Generate 4–6 questions
+      
+      Use [] in the question stem to indicate the blank; the correct answer must not appear in the stem
+      
+      Answers must be exact words that appear in the passage
+      
+      Answers must appear in the passage in numerical order (the answer to Question 1 must appear before Question 2)
+      
+      Each blank must contain one word only
+      
+      [True / False / Not Given]
+      
+      (Very important) All statements must be a summary, paraphrase, or compressed version of the original passage and must NOT be copied directly from the text!!!!
+      
+      You must generate exactly 3 questions:
+          - One TRUE
+          - One FALSE
+          - One NOT GIVEN
+      
+      Statements must be concise, neutral, and objective
+      
+      Explanations must point to the relevant content in the passage (quoted or paraphrased)
+      
+      [Required JSON Output Structure]
+      
+      {
+              "passage": "string (full passage body, excluding the title)",
+              "passage_title": "string (passage title)",
+              "questions": {
+                "fill_in_the_blanks": [
+                  {
+                    "id": 1,
+                    "question": "string (question stem, using [] to indicate the blank)",
+                    "answer": "string (must exactly match the word(s) used in the passage)",
+                    "explanation": "string (brief explanation of why the answer is correct, pointing to the relevant sentence in the passage)"
+                  }
+                  // continue generating more fill-in-the-blank questions...
+                ],
+                "true_false_not_given": [
+                  {
+                    "id": 1,
+                    "statement": "string",
+                    "answer": "TRUE / FALSE / NOT GIVEN",
+                    "explanation": "string (quote or summarize the passage content to justify the answer)"
+                  }
+                ]
+              }
+      }
+    '
+    reading1_correct: ''
+    reading2_start: '
+      You are now an IELTS Reading Generator.
+      ⚠️ [Highest Priority: Word Count Requirement]
+      You must generate a Passage 2 article between 600 and 800 English words.
+      This rule is absolutely strict (STRICT).
+      Do not generate fewer than 600 words.
+      Do not generate more than 800 words.
+      If the word count is outside this range, you must automatically adjust and regenerate the article.
+      
+      After the passage is completed, you must then generate Matching Information questions.
+      
+      [Passage 2 Output Requirements]
+      
+      Passage 2 style: expository, logically clear, with medium to relatively high information density
+      
+      You must generate 6–7 paragraphs, labeled A–F or A–G
+      
+      Each paragraph must contain a distinct information point; repetition or content stacking is not allowed
+      
+      The entire passage is an object composed of multiple paragraphs (A–F / A–G)
+      
+      Main topic: [1]
+      
+      Subtopic: [2]
+      
+      Text style: [text_styles]
+      
+      Writing tone: [tones]
+      
+      Time frame: [time_frames]
+      
+      Geographical background: [geographies]
+      
+      Paragraph structure type: [structures]
+      
+      Narrator perspective type: [narrators]
+      
+      Example type: [example_types]
+      
+      [Paragraph Structure Requirements]
+      
+      The number of paragraphs must be 6 or 7 (A–F or A–G)
+      
+      Each paragraph must contain no fewer than 80 words and no more than 150 words (to ensure total word count compliance)
+      
+      Paragraph content must be different and contain independent information points
+      
+      Paragraphs should demonstrate logical progression, but must not restate or duplicate one another
+      
+      [Question Generation Requirements: Matching Information]
+      
+      Each statement must be a “summary, paraphrase, or compressed version” of the original paragraph
+      
+      Generate only this question type
+      
+      It is recommended to generate 6–8 matching statements
+      
+      Statements must not directly copy sentences from the passage
+      
+      Each statement must correspond to one paragraph (A–G) in the passage
+      
+      Each answer must be supported by clear evidence in the corresponding paragraph
+      
+      Explanations must point to key sentences or briefly explain the reasoning
+      
+      No more than three questions may correspond to the same paragraph (to avoid over-concentration)
+      
+      The JSON output must be valid and parsable
+      
+      [Final JSON Output Structure (must strictly comply)]
+      
+      {
+        passage_title: "title"
+        "passage": {
+          "A": "paragraph content",
+          "B": "paragraph content",
+          "C": "paragraph content",
+          ...
+        },
+        "questions": {
+          "matching_information": [
+            {
+              "id": 1,
+              "statement": "summarized description (must not be copied directly from the passage)",
+              "answer": "one paragraph letter from A–G",
+              "explanation": "indicates which sentence in the paragraph supports the match"
+            }
+            // subsequent questions...
+          ]
+        }
+      }
+      
+      
+      [Statement Writing Rules]
+      
+      Must be a “summary + paraphrased version” of the paragraph’s core idea
+      
+      Content must correspond to the paragraph but must not use identical sentences
+      
+      Use broader ideas, paraphrasing, information compression, and key-term substitution
+      
+      Clear supporting evidence must be identifiable in the paragraph
+    '
     reading2_correct: ""
-    reading3_start: ""
+    reading3_start: '
+    You are now an IELTS Reading Generator.
+    ⚠️ [Highest Priority: Word Count Requirement]
+    You must generate a Passage 3 article between 700 and 900 English words.
+    This rule is absolutely strict (STRICT).
+    Do not generate fewer than 700 words.
+    Do not generate more than 900 words.
+    If the word count is outside this range, you must automatically adjust and regenerate the article.
+
+    After the article is completed, generate Multiple Choice Questions (MCQ) and True / False / Not Given questions.
+    
+    Passage 3 Output Requirements
+    
+    Passage 3 style: abstract, highly academic, logically complex, with relatively long paragraphs
+    
+    You must generate 6–8 paragraphs, separated by two line breaks
+    
+    Paragraph information must be rigorous and traceable
+    
+    The passage must not contain any blank brackets, underscores, or placeholders
+    
+    Topic: [1]
+    
+    MCQ Output Requirements
+    
+    (Very important) All questions must be a summary, paraphrase, or information compression of the original passage and must NOT directly copy the text!!!!
+    
+    Generate 3–5 multiple-choice questions
+    
+    Each question has only one correct answer (A/B/C/D)
+    
+    Options must cover different information points in the passage and must not be concentrated in a single paragraph
+    
+    The explanation must clearly explain:
+        1. Why the correct answer is correct
+        2. Why the other options are incorrect
+    
+    True / False / Not Given Output Requirements
+    
+    Statements must be paraphrased or summarized versions of the passage content; direct copying is not allowed
+    
+    Generate 4–6 questions
+    
+    Answers must strictly be TRUE, FALSE, or NOT GIVEN
+    
+    Explanations must indicate paragraph evidence or provide a brief summary
+    
+    Final JSON Output Structure (must strictly comply):
+    
+    {
+      "title": "string",
+      "passage": "full passage content, paragraphs separated by \\n\\n",
+      "mcq": {
+        "questions": [
+          {
+            "id": 1,
+            "title": "string (question)",
+            "options": {"A":"string","B":"string","C":"string","D":"string"},
+            "correct_answer": "A/B/C/D",
+            "explanation": "string (explains why the correct answer is correct and why the other options are incorrect)"
+          }
+          // more MCQs...
+        ]
+      },
+      "true_false_not_given": [
+        {
+          "id": 1,
+          "statement": "string (statement)",
+          "correct_answer": "TRUE / FALSE / NOT GIVEN",
+          "explanation": "string (quotes or summarizes passage content to justify the decision)"
+        }
+        // more TFNG questions...
+      ]
+    }
+    '
     reading3_correct: ""
-    writing1_start: ''
-    writing1_correct: ''
-    writing2_start: ''
-    writing2_correct: ''
-    sentence_upgrade_correct: ''
-    sentence_translation_start: ''
-    speaking_start: ''
+    writing1_start: '
+      You are now an IELTS Academic Task 1 prompt generator.
+    Task: generate an IELTS Task 1 writing prompt, including task type, chart description, and data.
+    You must strictly follow the JSON Schema below to ensure it can be directly used for frontend chart rendering or automated marking systems.
+
+    (Very important) Target word count for band8plus_example: 170 words
+
+    Unified JSON Schema:
+    
+    {
+      "type": "bar | line | pie | table | process",
+      "title": "concise title describing the topic",
+      "units": "data units, e.g. millions, %, people, can be an empty string",
+      "time_range": "time range, e.g. 2010-2020, can be an empty string",
+      "description": "brief description of task background or requirement, can be an empty string",
+      "content": { ... }  // different chart types have different structures
+    }
+    
+    
+    Content Sub-structure Requirements:
+    
+    1) bar / line / table:
+    
+    {
+      "labels": ["2010", "2015", "2020"],  // x-axis or row labels
+      "series": {
+        "France": [77, 84, 89],
+        "USA": [60, 70, 79]
+      }
+    }
+    
+    
+    2) pie:
+    
+    {
+      "slices": {
+        "Agriculture": 35,
+        "Industry": 40,
+        "Services": 25
+      }
+    }
+    
+    
+    3) process:
+    
+    {
+      "steps": ["Collecting bottles", "Sorting", "Cleaning", "Shredding", "Melting", "Producing new items"]
+    }
+    
+    
+    Generation Requirements (must comply):
+    
+    Strictly follow JSON format; do not explain or output extra text.
+    
+    Data should be reasonable, with comparability or clear trends.
+    
+    The title must be short and precise.
+    
+    For line / bar charts, labels must include at least 3 time points or categories.
+    
+    series or slices must include at least 3 items.
+    
+    Avoid duplicate data.
+    
+    Ensure diversity across different chart types.
+    
+    The description may include a sentence prompting candidates to observe trends or make comparisons.
+    
+    Main theme: [1], sub-theme under the main theme: [2]
+    
+    Chart type: [3]
+    
+    Time structure: [4]
+    
+    Comparison dimension: [5]
+    
+    Data complexity: [6]
+    
+    Simultaneously generate a high-scoring sample answer (band 8+)
+    
+    Output example (JSON): must strictly follow the schema, no extra text allowed.
+    
+    Example:
+    
+    {
+      "type": "bar",
+      "title": "Number of international students in 5 countries",
+      "units": "thousands",
+      "time_range": "2010-2020",
+      "description": "Compare the number of international students over the years.",
+      "content": {
+        "labels": ["2010", "2015", "2020"],
+        "series": {
+          "USA": [550, 700, 820],
+          "UK": [430, 470, 510],
+          "Canada": [210, 300, 400],
+          "Australia": [320, 350, 380],
+          "Germany": [280, 290, 310]
+        }
+      }
+      "band8plus_example": "a high-scoring sample essay for this task"
+    }
+    '
+    writing1_correct: '
+      You are now an IELTS Academic Task 1 writing examiner.
+    Task: assess and provide feedback on a student’s submitted Task 1 writing.
+    Input Description:
+    
+    Prompt JSON (task content and data), following the unified schema:
+    
+    {
+      "type": "bar | line | pie | table | map | process ",
+      "title": "...",
+      "units": "...",
+      "time_range": "...",
+      "description": "...",
+      "content": { ... }
+    }
+    
+    
+    Student-written response (string)
+    
+    Requirements:
+    
+    Provide overallBand (0–9, half bands allowed).
+    
+    Calculate scores (0–9) according to the four IELTS criteria:
+        - taskAchievement: task completion, accurate description of trends, comparisons, and main features
+        - coherenceCohesion: paragraph structure, logical linking, information organization
+        - lexicalResource: vocabulary range and accuracy
+        - grammaticalRange: grammatical accuracy and use of complex structures
+    
+    Output strengths, improvements, suggestions, with at least 3 items each.
+        - strengths: strengths in the student’s writing
+        - errors: mistakes made by the student, including spelling and grammar
+        - improvements: weaknesses or areas for improvement, with detailed explanations based on the student’s sentences
+        - suggestions: actionable advice for improvement, with detailed sentence-level guidance
+    
+    Output errors specifically:
+        - errors: mistakes in the student’s writing, including spelling and grammar, specified at sentence level; if none, output an empty array
+    
+    Output must strictly follow the JSON structure; do not output extra explanations or text.
+    
+    Scores and feedback must be based on the chart or process data provided in the prompt JSON, checking whether the student:
+        - summarized main trends / features
+        - made appropriate comparisons
+        - used appropriate vocabulary and sentence structures
+        - maintained clear logic and paragraphing
+        - avoided repetition and redundancy
+        - used accurate tense and grammar
+    
+    Output example:
+    
+    {
+      "overallBand": 7.5,
+      "scores": {
+        "taskAchievement": 7.5,
+        "coherenceCohesion": 7.0,
+        "lexicalResource": 7.5,
+        "grammaticalRange": 8.0
+      },
+      "strengths": [
+        "Good overview of the main trends",
+        "Appropriate use of data to support points",
+        "Clear paragraph structure"
+      ],
+      "improvements": [
+        "More varied vocabulary could be used",
+        "Some sentences could be more concise",
+        "Consider adding more comparisons between data points"
+      ],
+      "errors": [
+        "spell check",
+        "tense",
+        "preposition"
+      ],
+      "suggestions": [
+        "Use more synonyms to avoid repetition",
+        "Practice using complex sentence structures",
+        "Focus on highlighting the most significant features"
+      ]
+    }
+    
+    
+    Final Actual Input:
+    
+    Prompt JSON:
+    [1]
+    
+    Student response text:
+    [2]
+    '
+    writing2_start: '
+      You are now an IELTS Academic Writing Task 2 question generator.
+      Your task is to automatically generate the following based on the input classification parameters:
+      
+      A Task 2 question (question)
+      
+      Question type (question_type)
+      
+      Stance / idea hints (stance_hint) — automatically switch formats according to question type
+      
+      Paragraph structure hints (outline_hint) — automatically generated based on question type
+      
+      A Band 8+ sample essay (band8plus_example)
+      
+      Unified output format example (must be strictly followed):
+      
+      {
+        "question_type": "opinion | discussion | problem_solution | advantages_disadvantages | two_part",
+        "question": "Question text",
+        "stance_hint": {...}, 
+        "outline_hint": [...],
+        "band8plus_example": "A Band 8+ high-scoring sample essay"
+      }
+      
+      
+      Stance_hint structure rules for different question types (must be followed)
+      
+      1. Opinion (Agree / Disagree)
+      
+      "stance_hint": {
+        "possible_positions": {
+          "total_agree": {
+              "A": "Reason A",
+              "B": "Reason B",
+              "C": "Reason C"
+          },
+          "partial_agree": {
+              "A": "Reason A",
+              "B": "Reason B",
+              "C": "Reason C"
+          },
+          "disagree": {
+              "A": "Reason A",
+              "B": "Reason B",
+              "C": "Reason C"
+          }
+        }
+      }
+      
+      
+      2. Discussion (Discuss both views)
+      
+      "stance_hint": {
+        "viewpoint_A": { 
+          "A": "Reason supporting viewpoint A",
+          "B": "Reason supporting viewpoint A",
+          "C": "Reason supporting viewpoint A"
+        },
+        "viewpoint_B": { 
+          "A": "Reason supporting viewpoint B",
+          "B": "Reason supporting viewpoint B",
+          "C": "Reason supporting viewpoint B"
+        },
+        "your_opinion_options": { 
+          "prefer_A": "Reason for preferring A",
+          "prefer_B": "Reason for preferring B",
+          "intermediate": "Reason for a balanced view"
+        }
+        ["Prefer A", "Prefer B", "Balanced view"]
+      }
+      
+      
+      3. Problem–Solution
+      
+      "stance_hint": {
+        "common_problems": { 
+          "A": {
+              "desc": "Description of problem A",
+              "solutions": {
+                  "A": "Solution A",
+                  "B": "Solution B",
+                  "C": "Solution C"
+              }
+          },
+          "B": {
+              "desc": "Description of problem B",
+              "solutions": {
+                  "A": "Solution A",
+                  "B": "Solution B",
+                  "C": "Solution C"
+              }
+          }
+        }
+      }
+      
+      
+      4. Advantages–Disadvantages
+      
+      "stance_hint": {
+        "advantages": {
+                  "A": "Advantage A",
+                  "B": "Advantage B",
+                  "C": "Advantage C"
+        },
+        "disadvantages": {
+                  "A": "Disadvantage A",
+                  "B": "Disadvantage B",
+                  "C": "Disadvantage C"
+        },
+        "optional_opinion": 
+          {
+              "prefer_advantage": {
+                  "desc": "Overall tendency to favor advantages...",
+                  "reasons": {
+                      "A": "Reason A",
+                      "B": "Reason B",
+                      "C": "Reason C"
+                  }
+              },
+              "prefer_disadvantage": {
+                  "desc": "Overall tendency to favor disadvantages...",
+                  "reasons": {
+                      "A": "Reason A",
+                      "B": "Reason B",
+                      "C": "Reason C"
+                  }
+              }
+        }
+      }
+      
+      
+      5. Two-part Question
+      
+      "stance_hint": {
+        "question_1_ideas": {
+              "A": "Idea A",
+              "B": "Idea B",
+              "C": "Idea C"
+          },
+        "question_2_ideas": {
+              "A": "Idea A",
+              "B": "Idea B",
+              "C": "Idea C"
+          },
+        "user_guidance": "Can be developed from personal, social, or economic perspectives"
+      }
+      
+      
+      outline_hint type listings: structure must be automatically selected based on question type
+      
+      Opinion (Agree/Disagree)
+      
+      {
+          "introduction": "Paraphrase the question + state position",
+          "body1": "Reason 1 + example",
+          "body2": "Reason 2 + example",
+          "conclusion": "Restate position",
+          "examples": {
+            "introduction": "Many people believe that...",
+            "body1": "Firstly, ...",
+            "body2": "Secondly, ...",
+            "conclusion": "In conclusion, ..."
+          }
+      }
+      
+      
+      Discussion
+      
+      {
+          "introduction": "Paraphrase the question + mention both views",
+          "body1": "Viewpoint A + supporting arguments",
+          "body2": "Viewpoint B + supporting arguments",
+          "conclusion": "State your own opinion",
+          "examples": {
+            "introduction": "Many people believe that...",
+            "body1": "Firstly, ...",
+            "body2": "Secondly, ...",
+            "conclusion": "In conclusion, ..."
+          }
+      }
+      
+      
+      Problem–Solution
+      
+      {
+          "introduction": "Background + overview of the issue",
+          "body1": "Main problems / causes",
+          "body2": "Solutions",
+          "conclusion": "Summarize the effectiveness of the solutions",
+          "examples": {
+            "introduction": "Many people believe that...",
+            "body1": "Firstly, ...",
+            "body2": "Secondly, ...",
+            "conclusion": "In conclusion, ..."
+          }
+      }
+      
+      
+      Advantages–Disadvantages
+      
+      {
+          "introduction": "Paraphrase the question",
+          "body1": "Advantages",
+          "body2": "Disadvantages",
+          "conclusion": "Overall judgment if required",
+          "examples": {
+            "introduction": "Many people believe that...",
+            "body1": "Firstly, ...",
+            "body2": "Secondly, ...",
+            "conclusion": "In conclusion, ..."
+          }
+      }
+      
+      
+      Two-part Question
+      
+      {
+          "introduction": "Paraphrase the question",
+          "body1": "Answer question one",
+          "body2": "Answer question two",
+          "conclusion": "Summarize viewpoints (optional)",
+          "examples": {
+            "introduction": "Many people believe that...",
+            "body1": "Firstly, ...",
+            "body2": "Secondly, ...",
+            "conclusion": "In conclusion, ..."
+          }
+      }
+      
+      
+      band8plus_example data structure example:
+      
+      "band8plus_example": {
+        "full_text": "Full essay text",
+        "high_vocab_phrases": ["phrase1", "phrase2"]
+      }
+      
+      
+      ⚠️ Generation requirements (must be followed)
+      
+      Output must strictly conform to JSON format
+      
+      The question must reflect authentic Task 2 style
+      
+      stance_hint must not contain full answers—only directions
+      
+      outline_hint must always have a four-paragraph structure
+      
+      No output outside of JSON is allowed
+      
+      Full essay (band8plus_example.full_text) must be natural, formal, coherent, precise, and reach Band 8.5+
+      
+      Question type: [1]
+      
+      Main theme of the generated question: [2], sub-theme: [3]
+      
+      Difficulty level: [4]
+      
+      Stance hints must avoid repetition and excessive overlap to prevent restricting user writing
+      
+      Perspective / Focus: [5]
+      
+      Region: [6]
+      
+      Population: [7]
+      
+      All five question types must adapt according to the input type
+    '
+    writing2_correct: '
+    You are now an IELTS Academic writing correction expert.
+    Task: Assess and provide feedback on a student’s Task 2 essay.
+    
+    Input description:
+    
+    Question (question content and given data)
+    
+    Student’s written response (string)
+    
+    Requirements (must be followed):
+    
+    Provide overallBand (0–9, half bands allowed)
+    
+    Calculate scores (0–9) based on IELTS four assessment criteria:
+    
+    taskAchievement: task completion, accuracy, coverage of key features
+    
+    coherenceCohesion: paragraphing, logical flow, organization
+    
+    lexicalResource: vocabulary range and accuracy
+    
+    grammaticalRange: grammatical accuracy and use of complex structures
+    
+    Output strengths, improvements, and suggestions (at least 3 each):
+    
+    strengths: writing strengths
+    
+    improvements: weaknesses or areas to improve, explained with reference to the student’s sentences
+    
+    suggestions: actionable advice for improvement, explained with reference to the student’s sentences
+    
+    Output errors:
+    
+    errors: mistakes in spelling, grammar, etc., specified at sentence level; empty if none
+    
+    Output must strictly follow JSON structure with no extra explanation or text
+    
+    Scores and feedback must be based on the question and check whether the student:
+    
+    used appropriate vocabulary and sentence structures
+    
+    demonstrated clear logic and paragraphing
+    
+    avoided redundancy
+    
+    maintained tense and grammatical accuracy
+    
+    Evaluation must be objective and fair
+    
+    Example output:
+    
+    {
+      "overallBand": 7.5,
+      "scores": {
+        "taskAchievement": 7.5,
+        "coherenceCohesion": 7.0,
+        "lexicalResource": 7.5,
+        "grammaticalRange": 8.0
+      },
+      "strengths": [
+        "Good overview of the main trends",
+        "Appropriate use of data to support points",
+        "Clear paragraph structure"
+      ],
+      "improvements": [
+        "More varied vocabulary could be used",
+        "Some sentences could be more concise",
+        "Consider adding more comparisons between data points"
+      ],
+      "errors": [
+        "spell check",
+        "tense",
+        "preposition"
+      ],
+      "suggestions": [
+        "Use more synonyms to avoid repetition",
+        "Practice using complex sentence structures",
+        "Focus on highlighting the most significant features"
+      ]
+    }
+    
+    
+    Final actual input:
+    
+    Question type: [1]
+    
+    Question: [2]
+    
+    Student response text:
+    [3]
+    '
+    sentence_upgrade_correct: '
+      You are a professional IELTS Writing Sentence Enhancement Specialist.
+      Your task is to upgrade a user-provided English sentence into Band 6, Band 7, and Band 8 versions.
+      
+      Please strictly follow the rules below:
+      
+      Input sentence
+      The user will provide one English sentence or a clause-length expression.
+      
+      Output requirements
+      You must strictly return the result in the following JSON format, with no extra explanations, markdown, or text:
+      
+      {
+        "band6": {
+          "sentence": "Rewritten Band 6 sentence",
+          "improvements": "Clearly explain Band 6 improvements (slightly enhanced vocabulary, clearer structure, more accurate meaning, etc.)",
+          "score": 6.0
+        },
+        "band7": {
+          "sentence": "Rewritten Band 7 sentence",
+          "improvements": "Explain Band 7 upgrades (more advanced vocabulary, clause structures, more natural academic tone, etc.)",
+          "score": 7.0
+        },
+        "band8": {
+          "sentence": "Rewritten Band 8 sentence",
+          "improvements": "Explain Band 8 upgrades (high-level vocabulary, complex sentence structures, academic expression, precise logic)",
+          "score": 8.0
+        }
+      }
+      
+      
+      Generation principles
+      
+      The three versions must demonstrate clear, progressive improvement
+      
+      Band 6: slightly stronger vocabulary, smoother sentence, basic clauses/connectors allowed
+      
+      Band 7: clear use of academic vocabulary and complex sentence structures
+      
+      Band 8: advanced academic vocabulary, compound and complex clauses, concise and precise expression
+      
+      All versions must faithfully preserve the original meaning with clearly differentiated expression
+      
+      Rewrite only—do not add unrelated information
+      
+      Start
+      Please generate the JSON output above based on the user-provided sentence.
+      User input sentence: [1]
+    '
+    sentence_translation_start: '
+      You are a Sentence Variation content generator. Your task is to create English sentences on the same topic, with difficulty progressively increasing from simple to complex.
+      Core rules (must be strictly followed):
+      
+      Output 5 sentences (highest priority) with difficulty levels strictly from difficulty: 1 to difficulty: 5.
+      If there are not exactly five sentences, you must automatically adjust and regenerate.
+      
+      All sentences must discuss the same topic or object.
+      
+      ===================================================
+      
+      Topic: [topic]
+      
+      Subtopic: [subtopic]
+      
+      Each data item must include: English sentence (en), Chinese translation (cn), and difficulty (difficulty, from 1 to 5).
+      ===================================================
+      Difficulty progression rules (must be followed):
+      
+      Difficulty 1–4: Basic expressions (simple sentence → basic compound sentence)
+      
+      Simple sentences
+      
+      Simple conjunctions like because / when
+      
+      Basic everyday vocabulary
+      
+      Difficulty 5: Intermediate expressions (structure upgrade)
+      
+      Participle structures (V-ing / V-ed)
+      
+      Enhanced prepositional phrases
+      
+      Advanced logical connectors (due to, as a result of, whereas, etc.)
+      
+      More professional thematic vocabulary
+      ===================================================
+      
+      Output format must exactly match the following example:
+      
+      [
+        { 
+          en: "The company announced its quarterly earnings yesterday", 
+          cn: "该公司昨天公布了季度收益", 
+          difficulty: 1 
+        },
+        ......
+      ]
+      
+      
+      Final output requirements:
+      
+      Do not write explanations or extra content, only output the JSON array
+      '
+    speaking_start: '
+      You are a Sentence content generator. Your task is to create sentences suitable for speaking practice on the same topic.
+      Core rules (must be strictly followed):
+      
+      Output 5 sentences (highest priority).
+      If there are not exactly five sentences, you must automatically adjust and regenerate.
+      
+      Each sentence must not exceed 15 words.
+      
+      ===================================================
+      
+      Topic: [topic]
+      
+      Subtopic: [subtopic]
+      
+      Each data item must include: English sentence (en), Chinese translation (cn)
+      ===================================================
+      
+      Output format must exactly match the following example:
+      
+      [
+        { 
+          en: "The company announced its quarterly earnings yesterday", 
+          cn: "该公司昨天公布了季度收益" 
+        },
+        ......
+      ]
+      
+      
+      Final output requirements:
+      
+      Do not write explanations or extra content, only output the JSON array
+    '
   zh:
     subtopics_start: '
       请根据我所提供的雅思大主题:[1], 生成10-20个该大主题下的子主题,
@@ -543,6 +1792,9 @@ prompt:
     writing1_start: '
       你现在是一个雅思 Academic 小作文题目生成器。
       任务：生成一份雅思 Task 1 小作文题目，包括题目类型、图表描述和数据，必须严格遵守以下 JSON Schema，确保可直接用于前端绘图或批改系统。
+      
+      （非常重要）-范文（band8plus_example）目标词数：170 词
+      
       统一 JSON Schema：
       {
         "type": "bar | line | pie | table | process",
