@@ -8,7 +8,7 @@ An AI-powered learning application designed for **IELTS exam preparation**, cove
 ## 🖼 Screenshots
 
 ### Home Page
-![Home Page](screenshots/en.png)
+![Home Page](screenshot/en.png)
 
 ## ✨ Product Overview
 
