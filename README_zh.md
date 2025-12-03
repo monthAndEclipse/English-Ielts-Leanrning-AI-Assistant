@@ -6,7 +6,7 @@
 ---
 
 ## 主页截图
-![Home Page](screenshots/home.png)
+![Home Page](screenshots/zh.png)
 
 
 
